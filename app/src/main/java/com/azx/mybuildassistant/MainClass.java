@@ -1,7 +1,5 @@
 package com.azx.mybuildassistant;
 
-import com.azx.mybuildassistant.santiyun.BuildPublishDemoApkTask;
-
 public class MainClass {
 
     public static void main(String[] args) {
@@ -9,8 +7,8 @@ public class MainClass {
 //        DocumentBuildTask mDocumentBuildTask = new DocumentBuildTask();
 //        mDocumentBuildTask.start();
 
-        BuildPublishDemoApkTask sdk = new BuildPublishDemoApkTask();
-        sdk.start();
+//        BuildPublishDemoApkTask sdk = new BuildPublishDemoApkTask();
+//        sdk.start();
 
 //        BuildStandSdkTask sdk = new BuildStandSdkTask();
 //        sdk.start();

@@ -31,7 +31,6 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask implements ProcExe
     private static final String SDK_CACHE = MACHINE_PATH + "/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/" +
             "TTTRtcEngine_AndroidKit/SDK_CACHE/3T_Native_SDK_for_Android_V2.7.0_Full(2020_02_24).aar";
     private static final String SDK_NEW_NAME = "/TTT_SDK.aar";
-    private static final String CMD_STOP_FLAG = "FINISH";
 
     @Override
     public int start() {
@@ -102,8 +101,8 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask implements ProcExe
     private CmdBean[] buildCmd(PublishDemoBean bean) {
         CmdBean[] cmds = new CmdBean[]{
                 new CmdBean("cd " + bean.project_path, CMD_STOP_FLAG),
-                new CmdBean(GRADLE + " clean ", null),
-                new CmdBean(GRADLE + " assembleRelease", null),
+                new CmdBean(GRADLE + " clean ", CMD_STOP_FLAG),
+                new CmdBean(GRADLE + " assembleRelease", CMD_STOP_FLAG),
                 new CmdBean("cp " + bean.output_apk_path + " " + APK_OUTPUT_PATH, CMD_STOP_FLAG),
                 new CmdBean("mv " + APK_OUTPUT_PATH + bean.src_apk_name + " " + APK_OUTPUT_PATH + bean.target_apk_name, CMD_STOP_FLAG),
         };

@@ -4,6 +4,8 @@ import java.io.File;
 
 public abstract class SanTiYunBaseTask extends BaseTask {
 
+    protected static final String CMD_STOP_FLAG = "FINISH";
+
     // 三体云代码仓库路径
     protected static final String SANTIYUN_PATH = MACHINE_PATH + "/Downloads/Learns/Guo_Company_Svn";
     // 三体云 SDK 路径
@@ -12,6 +14,8 @@ public abstract class SanTiYunBaseTask extends BaseTask {
     protected static final String STAND_SDK_PROJECT_PATH = SANTIYUN_PATH + SANTIYUN_SDK_PATH + "/Demo/android/WS_ANDROID_MOMODemo";
 
     protected static final String OLD_SDK_PROJECT_PATH = SANTIYUN_PATH + SANTIYUN_SDK_PATH + "/Demo/android/WS_ANDROID_DEMO";
+
+    protected static final String QUANMIN_SDK_PROJECT_PATH = SANTIYUN_PATH + SANTIYUN_SDK_PATH + "/Demo/android/QUANMIN_LIVE_DEMO";
 
     protected static final String ENTERCONFAPI_MODULE_NAME = "enterconfapi";
     protected static final String ENTERCONFAPI_MODULE_PATH = STAND_SDK_PROJECT_PATH + File.separator + ENTERCONFAPI_MODULE_NAME;
