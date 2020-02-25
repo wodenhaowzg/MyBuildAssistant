@@ -1,0 +1,1493 @@
+package com.azx.mybuildassistant.santiyun.bean;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.view.SurfaceView;
+
+import com.wushuangtech.bean.TTTVideoFrame;
+import com.wushuangtech.expansion.bean.ScreenRecordConfig;
+import com.wushuangtech.expansion.bean.VideoCompositingLayout;
+import com.wushuangtech.library.Constants;
+import com.wushuangtech.library.GlobalConfig;
+import com.wushuangtech.library.LocalSDKConstants;
+import com.wushuangtech.wstechapi.internal.TTTRtcEngineImpl;
+import com.wushuangtech.wstechapi.model.PublisherConfiguration;
+import com.wushuangtech.wstechapi.model.TTTVideoMixerCanvas;
+import com.wushuangtech.wstechapi.model.VideoCanvas;
+
+import ttt.ijk.media.exo.widget.media.IjkVideoView;
+
+/**
+ * SDK主体接口类,执行SDK各种功能
+ * 混淆配置
+ * -keep class ttt.ijk.media.**{*;}
+ * -keep class project.android.imageprocessing.**{*;}
+ * -keep class org.TTTRtc.voiceengine.**{*;}
+ * -keep class com.wushuangtech.**{*;}
+ * -dontwarn ttt.ijk.media.**
+ */
+public abstract class TTTRtcEngine {
+
+    /**
+     * SDK 的实例对象
+     */
+    private static volatile TTTRtcEngineImpl mInstance = null;
+
+    public TTTRtcEngine() {
+    }
+
+    // 全民分支
+    public static synchronized TTTRtcEngine create(Context context, String appId, TTTRtcEngineEventHandlerQM handler) {
+        if (context == null) {
+            return null;
+        }
+
+        if (mInstance == null) {
+            mInstance = new TTTRtcEngineImpl(context, appId, false, handler);
+        } else {
+            mInstance.reinitialize(context, appId, handler);
+        }
+        return mInstance;
+    }
+
+    /**
+     * 初始化 SDK 引擎，创建 SDK 的实例对象，目前 SDK 只支持一个 TTTRtcEngine 实例，即每个 App 仅可以创建一个 TTTRtcEngine 对象。
+     * 对接口的调用建议在同一个线程进行。接口的返回值分为两种，一种为 int 型的 API ，返回值 0 为调用成功，返回值小于 0 为调用失败。
+     * 另一种为 boolean 型的 API ，true 为调用成功，false 为调用失败。
+     * <p>
+     * 使用注意：<br/>
+     * 1.请确保在调用其他 API 前先调用该方法创建并初始化 TTTRtcEngine。<br/>
+     * 2.同一个 APP ID 才能进入同一个频道实现通话或直播。<br/>
+     * 3.TTTRtcEngine 同一时间只能持有一个 App ID。 如果 App 内存在多个 App ID，则需要再次调用 create 来切换 App ID ，此操作并不会再次创建一个新的实例对象。<br/>
+     * 4.SDK 暂不支持同时报告多个 TTTRtcEngineEventHandler 抽象类，只能注册一个。
+     *
+     * @param context    安卓APP(Android Application) 的上下文，而不是 Activity 的上下文。
+     * @param appId      三体为 App 开发者签发的 APP ID 。
+     * @param enableChat SDK 聊天功能，true 代表启用，false 代表不启用。该功能不支持大规模使用，如有需要聊天功能支持，请联系技术进行相关支持。
+     * @param handler    TTTRtcEngineEventHandler 是一个提供了缺省实现的抽象类，SDK 通过该抽象类向 App 报告 SDK 运行时的各种事件。
+     * @return TTTRtcEngine 对象
+     */
+    public static synchronized TTTRtcEngine create(Context context, String appId, boolean enableChat, TTTRtcEngineEventHandler handler) {
+        if (context == null) {
+            return null;
+        }
+
+        if (mInstance == null) {
+            mInstance = new TTTRtcEngineImpl(context, appId, enableChat, handler);
+        } else {
+            mInstance.reinitialize(context, appId, handler);
+        }
+        return mInstance;
+    }
+
+    /**
+     * 获取 SDK 的实例对象。
+     * <p/>
+     * 请确保在调用接口之前，已经初始化 SDK (即调用过 create 方法) ，并得到了 SDK 的实例对象，不然会获取到 Null 对象。<br/>
+     */
+    public static TTTRtcEngine getInstance() {
+        return mInstance;
+    }
+
+    /**
+     * SDK 的反初始化。
+     * <p/>
+     * 此操作暂不支持，可以忽略调用。
+     */
+    public static synchronized void destroy() {
+        if (mInstance != null) {
+            mInstance.doDestroy();
+            // FIXME SDK还不支持销毁
+//            mInstance = null;
+        }
+    }
+
+    /**
+     * 查询 SDK 版本号
+     *
+     * @return 当前的 SDK 版本号，格式为字符串，如 2.4.0。
+     */
+    public static String getSdkVersion() {
+        return GlobalConfig.SDK_VERSION_NAME;
+    }
+
+    /**
+     * TTTRtcEngineEventHandler 接口类用于 SDK 向 App 发送回调事件通知，App 通过继承该接口类的方法获取 SDK 的事件通知。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.SDK 暂不支持同时报告多个 TTTRtcEngineEventHandler 抽象类，同一时间只能注册一个，后注册覆盖之前的注册。
+     */
+    public abstract void setTTTRtcEngineEventHandler(TTTRtcEngineEventHandler mTTTRtcEngineEventHandler);
+
+    /**
+     * 设置频道模式，SDK 需知道 App 的使用场景（例如通信模式或直播模式），从而使用不同的优化手段。<br/>
+     * <p/>
+     * 使用注意：<br/>
+     * 1.相同频道内的所有用户必须使用相同的频道模式，才能获得一致的使用体验，混用会出现一些不可控问题。<br/>
+     * 2.必须在调用 joinChannel(加入频道) 接口之前调用和设置，加入频道后无法再设置。<br/>
+     * 3.必须在调用 setClientRole(设置角色) 接口之前调用该接口，否则会影响 setClientRole 接口的生效。比如只有在 CHANNEL_PROFILE_LIVE_BROADCASTING(直播)模式下，
+     * 才可以设置 CLIENT_ROLE_ANCHOR(主播) 角色。
+     * 4.该接口为全局接口，退房间不会复位，不必每次进房间都设置，可以只在模式发生变化时调用。
+     * <p/>
+     * 使用场景：<br/>
+     * 通信模式(CHANNEL_PROFILE_COMMUNICATION)，常用于 1v1 音视频通话或群聊，其特点为：<br/>
+     * 1.频道内的音视频交流，不能将音视频数据推送至 CDN 服务器。<br/>
+     * 2.任何人均可创建频道。<br/>
+     * 3.有两种角色可选，副播(CLIENT_ROLE_BROADCASTER)和观众(CLIENT_ROLE_AUDIENCE)，副播默认发送音视频数据，观众默认不发送，只听只看。<br/>
+     * <p/>
+     * 直播模式(CHANNEL_PROFILE_LIVE_BROADCASTING)，常用于泛娱乐直播，其特点为：<br/>
+     * 1.可以设置推流地址，并将音视频数据推送至 CDN 服务器，用于第三方观众拉流观看。<br/>
+     * 2.有三种角色可选，主播(CLIENT_ROLE_ANCHOR)、副播(CLIENT_ROLE_BROADCASTER)和观众(CLIENT_ROLE_AUDIENCE)，副播/观众和通信模式一样。<br/>
+     * 3.主播可以创建直播频道，其他角色则不可创建，只能加入频道。<br/>
+     * 4.频道没有被主播创建之前，其他副播/观众加入频道会失败。<br/>
+     * 5.收发语音/视频流。<br/>
+     * 6.有一些特殊功能，比如可以将某人请离房间。<br/>
+     * <p/>
+     * 游戏模式(CHANNEL_PROFILE_GAME_FREE_MODE)，与通信模式类似，但默认采用低功耗低码率的编解码。<br/>
+     *
+     * @param profile 频道模式<br/>
+     *                {@link Constants#CHANNEL_PROFILE_COMMUNICATION} 通信模式<br/>
+     *                {@link Constants#CHANNEL_PROFILE_LIVE_BROADCASTING} 直播模式<br/>
+     *                {@link Constants#CHANNEL_PROFILE_GAME_FREE_MODE} 游戏模式<br/>
+     *                <p/>
+     * @return 0 代表方法调用成功，其他代表失败：<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数有问题，设置的频道模式不在支持的范围之内。
+     */
+    public abstract int setChannelProfile(int profile);
+
+    /**
+     * 设置用户角色。
+     * <p/>
+     * 在加入频道前，用户需要通过本方法设置观众,副播(默认)或主播角色身份。在加入频道后，用户可以通过本方法切换用户角色身份。<br/>
+     * <p/>
+     * 使用注意：<br/>
+     * 1.如果你在加入频道后调用该方法切换用户角色，调用成功后，本地会触发 onClientRoleChanged 回调，建议在收到该回调之后，在做其他的逻辑操作；
+     * 远端会触发 onUserJoined(观众切换副播)/onUserOffline(副播切换观众) 的回调。<br/>
+     * 2.该接口为全局接口，退房间不会复位，不必每次进房间都设置，可以只在角色需要发生变化时调用。
+     *
+     * @param role 用户角色身份。<br/>
+     *             {@link Constants#CLIENT_ROLE_ANCHOR} 主播身份<br/>
+     *             {@link Constants#CLIENT_ROLE_BROADCASTER} 副播身份<br/>
+     *             {@link Constants#CLIENT_ROLE_AUDIENCE} 观众身份<br/>
+     * @return 0代表方法调用成功，其他代表失败：<br/>
+     * ERROR_FUNCTION_STATED -3 ：重复设置，当前角色已经是所要设置的角色。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用失败，有两种原因 1.非直播模式下设置主播角色；2.直播模式下并且已经加入频道，设置主播角色。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数有问题，设置的角色不在支持的范围之内。<br/>
+     */
+    public abstract int setClientRole(int role);
+
+    /**
+     * 用户加入频道，在同一个频道内的用户可以互相通话，多个用户加入同一个频道，可以群聊。
+     * <p/>
+     * 成功调用该方加入频道后，本地会触发 onJoinChannelSuccess 回调，远端会触发 onUserJoined 回调(若本地角色为观众则不会触发)。
+     * <p/>
+     * 在网络状况不理想的情况下，客户端可能与服务器连接失败，本地会触发 onError 回调，通知调用者加入频道失败，需要重新尝试加入频道。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.使用不同 App ID 的 App 是不能互通的。<br/>
+     * 2.如果已在通话中，用户必须调用 leaveChannel 退出当前通话，才能进入下一个频道。
+     *
+     * @param token       在 App 服务器端生成的用于鉴权的 Token，若无鉴权的需求可传空字符串。
+     * @param channelName 标识通话的频道名称。当前 SDK 仅支持数字类型的字符串，数值范围为1-9，不支持任何特殊符号，英文字母，空格等，
+     *                    长度续保证为 Long 类型的最大值以内。
+     * @param optionalUid 用户ID。当前 SDK 仅支持数字类型的字符串，数值范围为1-9，不支持任何特殊符号，英文字母，空格等，
+     *                    长度续保证为 Long 类型的最大值以内。
+     *                    <p/>
+     * @return 0 代表方法调用成功，其他代表失败：<br/>
+     * ERROR_FUNCTION_STATED -3 ：重复设置，已处于频道中。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数有问题，原因可能为：1. 设置的频道模式不对，不再支持的模式之内 2. channelName 参数为空或格式不对。
+     */
+    public abstract int joinChannel(String token, String channelName, long optionalUid);
+
+    /**
+     * 用户加入频道，在同一个频道内的用户可以互相通话，多个用户加入同一个频道，可以群聊。
+     * <p/>
+     * 成功调用该方加入频道后，本地会触发 onJoinChannelSuccess 回调，远端会触发 onUserJoined 回调(若本地角色为观众则不会触发)。
+     * <p/>
+     * 在网络状况不理想的情况下，客户端可能与服务器连接失败，本地会触发 onError 回调，通知调用者加入频道失败，需要重新尝试加入频道。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.使用不同 App ID 的 App 是不能互通的。<br/>
+     * 2.如果已在通话中，用户必须调用 leaveChannel 退出当前通话，才能进入下一个频道。
+     * 3.聊天功能 SDK 已废弃，不支持大规模应用。但接口尚未删除，功能可能会不稳定，如需 IM 功能，请联系技术支持获取帮助。
+     *
+     * @param token        在 App 服务器端生成的用于鉴权的 Token，若无鉴权的需求可传空字符串。
+     * @param channelName  标识通话的频道名称。当前 SDK 仅支持数字类型的字符串，数值范围为1-9，不支持任何特殊符号，英文字母，空格等，
+     *                     长度续保证为 Long 类型的最大值以内。
+     * @param optionalUid  用户ID。当前 SDK 仅支持数字类型的字符串，数值范围为1-9，不支持任何特殊符号，英文字母，空格等，
+     *                     长度续保证为 Long 类型的最大值以内。
+     * @param enableChat   启用聊天消息链路，若启用该功能，需要在调用 create 创建引擎时，将第三个参数 enableChat 设置为 true ，功能才能生效。
+     * @param enableSignal 启用聊天信令链路，若启用该功能，需要在调用 create 创建引擎时，将第三个参数 enableChat 设置为 true ，功能才能生效。
+     *                     <p/>
+     * @return 0 代表方法调用成功，其他代表失败：<br/>
+     * ERROR_FUNCTION_STATED -3 ：重复设置，已处于频道中。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数有问题，原因可能为：1. 设置的频道模式不对，不再支持的模式之内 2. channelName 参数为空或格式不对。
+     */
+    public abstract int joinChannel(String token, String channelName, long optionalUid, boolean enableChat,
+                                    boolean enableSignal);
+
+    /**
+     * 离开当前已加入的频道，即退出当前的通话/直播。
+     * <p/>
+     * 当调用 joinChannel(加入频道) 接口后，必须调用 leaveChannel 结束当前通话/直播，否则无法开始下一次通话/直播。不管当前是否在通话/直播中，都可以调用 leaveChannel，没有副作用。该方法会把频道相关的所有资源释放掉。
+     * <p/>
+     * 成功调用该方法离开频道后，本地会触发 onLeaveChannel 回调；通信模式下的用户和直播模式下的主播离开频道后，远端会触发 onUserOffline 回调。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.异步操作，调用返回时并没有真正退出频道。在真正退出频道后，SDK 会触发 onLeaveChannel 回调，建议在收到该回调事件后，再做其他相关逻辑操作。
+     *
+     * @return 0 代表方法调用成功，其他代表失败：<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用失败，发生未知错误。<br/>
+     */
+    public abstract int leaveChannel();
+
+    /**
+     * 更新 Token。
+     * <p/>
+     * 该方法用于更新 Token。如果启用了 Token 机制，过一段时间后使用的 Token 会失效。
+     * <p/>
+     * 当接收到 onTokenPrivilegeWillExpire 回调事件时，代表 Token 即将失效，App 应重新获取 Token，然后调用该接口更新 Token。
+     * 若没有调用该接口更新 Token 或更新失败，SDK 会发送 onUserKicked 回调事件，错误码为 Constants.ERROR_TOKEN_EXPIRED， SDK 内部会执行退出频道操作。
+     *
+     * @return 0 代表方法调用成功，其他代表失败：<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用失败，原因为：1.尚未加入频道，不处于频道中。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数为空值。<br/>
+     */
+    public abstract int renewToken(String token);
+
+    // ----------- 核心音频方法
+
+    /**
+     * 开/关本地音频采集。
+     * <p/>
+     * 当 App 加入频道时，SDK 语音功能默认是开启的。该方法可以关闭或重新开启本地语音功能，即停止或重新开始本地音频采集。
+     * <p/>
+     * 该方法不影响接收或播放远端音频流，enableLocalAudio(false) 适用于只听不发的用户场景。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.该接口需要在加入频道成功后调用才能生效。<br/>
+     * 2.该接口与 stopAudioPlayAndRecord 接口的区别在于，不影响接收或播放远端音频流。
+     * <p/>
+     * 使用场景：<br/>
+     * 1.App 内的其他功能需要使用麦克风，或切换到其他需要使用麦克风的 App 时，SDK 必须停止音频采集。
+     * <p/>
+     *
+     * @return 0 代表方法调用成功，其他代表失败：<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用失败，尚未加入频道。
+     */
+    public abstract int enableLocalAudio(boolean enabled);
+
+    /**
+     * 停止/恢复发送本地音频流。
+     * <p/>
+     * 静音/取消静音。该 API 用于禁止/允许往网络发送本地音频流，不影响音频采集以及音频流的接收。
+     * <p/>
+     * 成功调用该方法后，远端会触发 onUserMuteAudio 回调。
+     * <p/>
+     * 使用注意：<br/>
+     * 1、该方法不影响录音状态，并没有禁用麦克风。
+     * <p/>
+     *
+     * @param muted true：停止发送本地音频流，false：继续发送本地音频流（默认）。
+     *              <p/>
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int muteLocalAudioStream(boolean muted);
+
+    /**
+     * 停止/恢复接收所有音频流，不影响音频采集和音频流的发送。
+     *
+     * @param muted true：不接收所有远端音频流，false：接收所有远端音频流（默认）。
+     *              <p/>
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int muteAllRemoteAudioStreams(boolean muted);
+
+    /**
+     * 停止/恢复接收指定用户的音频流，不影响音频采集和音频流的发送。
+     * <p/>
+     * 如果之前有调用过 muteAllRemoteAudioStreams (true) 停止接收所有远端音频流，在调用本 API 之前请确保你已调用
+     * muteAllRemoteAudioStreams (false)。muteAllRemoteAudioStreams 是全局控制，muteRemoteAudioStream 是精细控制。
+     * <p/>
+     *
+     * @param uid   指定的用户 ID <br/>
+     * @param muted true：停止接收指定用户的音频流，false：继续接收指定用户的音频流（默认）。
+     *              <p/>
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int muteRemoteAudioStream(long uid, boolean muted);
+
+    /**
+     * 将某个远端用户静音，其他所有用户都无法听到该用户的说话
+     *
+     * @param uid   要被静音的用户ID
+     * @param muted true代表用户静音，false代表不静音
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int muteRemoteSpeaking(long uid, boolean muted);
+
+    /**
+     * 使用该方法调节混音里人声的音量比例大小。请在频道内调用该方法。
+     *
+     * @param volume 人声音量范围为0~100。默认100为原始人声音量。
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int adjustAudioMixingSoloVolume(int volume);
+
+    /**
+     * 该方法允许SDK定期向应用程序反馈当前谁在说话以及说话者的音量。
+     *
+     * @param interval 指定音量提示的时间间隔。小于0禁用音量提示功能，单位为毫秒
+     * @param smooth   平滑系数。默认可以设置为3。
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int enableAudioVolumeIndication(int interval, int smooth);
+
+    /**
+     * 设置音频编码参数。
+     * <p/>
+     * 默认 SDK 使用 ISAC 格式，适用于通话场景，而在对音质需求高的直播场景，推荐使用 AAC 或 OPUS，显式调用该 API 变更。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.该方法需要在 joinChannel(加入频道) 之前设置好，joinChannel 后设置不生效。<br/>
+     * 2.若使用 startRecordScreenAndSave(屏幕录制) 或 startRecordScreen(屏幕共享) API，则必须使用 AAC 。
+     * <p/>
+     *
+     * @param codecType 音频编码格式，支持的类型如下：<br/>
+     *                  {@link Constants#TTT_AUDIO_CODEC_AAC}<br/>
+     *                  {@link Constants#TTT_AUDIO_CODEC_ISAC}<br/>
+     *                  {@link Constants#TTT_AUDIO_CODEC_OPUS}<br/>
+     * @param bitrate   音频编码码率，范围如下：<br/>
+     *                  {@link Constants#TTT_AUDIO_CODEC_AAC}  码率范围48kbps ~ 128kbps<br/>
+     *                  {@link Constants#TTT_AUDIO_CODEC_ISAC} 码率范围16kbps ~ 32kbps<br/>
+     *                  {@link Constants#TTT_AUDIO_CODEC_OPUS} 码率范围16kbps ~ 128kbps<br/>
+     * @param channels  声道数，支持单声道和双声道，参数范围是1 ~ 2
+     *                  <p/>
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：已加入频道，调用会失败。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数有问题，比如所设置的音频编码格式、码率大小、或声道数不支持。
+     */
+    public abstract int setPreferAudioCodec(int codecType, int bitrate, int channels);
+
+    /**
+     * 设置音频编码为高音质选项，该 API 已废弃，建议使用 setPreferAudioCodec 替代。
+     * <p/>
+     * 默认 SDK 使用 ISAC 格式，适用于通话场景，而在对音质需求高的直播场景，推荐使用高音质。
+     * <p/>
+     * 高音质，音频编码为 AAC ，码率为 96kbps，单声道。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.该方法需要在 joinChannel(加入频道) 之前设置好，joinChannel 后设置不生效。<br/>
+     * 2.若使用 startRecordScreenAndSave(屏幕录制) 或 startRecordScreen(屏幕共享) API，则必须启用高音质。
+     * <p/>
+     *
+     * @param enable true 启用高音质，false 禁用高音质
+     * @return 0代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：已加入频道，调用会失败。
+     */
+    @Deprecated
+    public abstract int setHighQualityAudioParameters(boolean enable);
+
+    /**
+     * 停止/恢复音频采集和播放
+     *
+     * @param stop YES: 停止采集和播放  NO: 恢复采集和播放
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int stopAudioPlayAndRecord(boolean stop);
+
+    // ----------- 核心视频方法
+
+    /**
+     * <p>启用视频模块。<p/>
+     * 默认 SDK 不启用视频模块，加入频道前调用，则开启视频模块的功能；在频道中调用则由纯音频模式切换为音视频模式，调用 disableVideo API 可关闭视频模块功能。
+     * <p/>
+     * 成功调用该方法后，远端会触发 onUserEnableVideo(true) 回调。
+     * <p/>
+     * 使用注意：<br/>
+     * 1、全局接口，调用leaveChannel(离开频道) 后状态并不会被清除，不必每次进房间都设置。<br/>
+     * 2、重置整个视频模块相关 API。<br/>
+     * startPreview：开启视频预览。<br/>
+     * enableLocalVideo(true)：是否启动摄像头采集并创建本地视频流。<br/>
+     * muteRemoteVideoStream(false)：是否接收并播放远端视频流。<br/>
+     * muteAllRemoteVideoStreams(false)：是否接收并播放所有远端视频流。
+     *
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int enableVideo();
+
+    /**
+     * 关闭视频模块。
+     * <p/>
+     * 默认 SDK 不启用视频模块，加入频道前调用，则关闭视频模块的功能；在频道中调用则由音视频模式切换为纯音频模式，调用 enableVideo API 可启用视频模块功能。
+     * <p/>
+     * 成功调用该方法后，远端会触发 onUserEnableVideo(false) 回调。
+     * <p/>
+     * 使用注意：<br/>
+     * 1、全局接口，调用leaveChannel(离开频道) 后状态并不会被清除，不必每次进房间都设置。<br/>
+     * 2、重置整个视频模块相关 API。<br/>
+     * stopPreview：关闭视频预览。<br/>
+     * enableLocalVideo(false)：是否启动摄像头采集并创建本地视频流。<br/>
+     * muteRemoteVideoStream(true)：是否接收并播放远端视频流。<br/>
+     * muteAllRemoteVideoStreams(true)：是否接收并播放所有远端视频流。
+     *
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int disableVideo();
+
+    /**
+     * 设置视频属性。
+     * <p/>
+     * SDK 提供相对合适的视频质量等级，方便对视频质量的调节。
+     * <p/>
+     * 全局接口，调用leaveChannel(离开频道) 后状态并不会被清除，不必每次进房间都设置。<br/>
+     *
+     * @param profile            预设的视频质量，详情参看官网的文档说明。<br/>
+     * @param swapWidthAndHeight SDK 会按照你选择的视频属性输出固定宽高的视频，该参数设置是否交换宽和高。<br/>
+     *                           true：交换宽和高，交换后视频为 Portrait（竖屏）布局，即宽 < 高<br/>
+     *                           false：（默认）不交换宽和高，视频为 Landscape（横屏）布局，即宽 > 高
+     *                           <p/>
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setVideoProfile(int profile, boolean swapWidthAndHeight);
+
+    /**
+     * 设置视频属性。
+     * <p/>
+     * 根据 app 自身场景下的需求，设置自定义的视频编码参数。
+     * <p/>
+     * 全局接口，调用leaveChannel(离开频道) 后状态并不会被清除，不必每次进房间都设置。<br/>
+     *
+     * @param width     视频宽度，宽 × 高的最大值不超过 1920 × 1080。<br/>
+     * @param height    视频高度，宽 × 高的最大值不超过 1920 × 1080。<br/>
+     * @param frameRate 视频帧率，最高值不超过 30，如： 5、10、15、24、30 等。<br/>
+     * @param bitRate   视频码率，需要根据设置的视频的宽、高和帧率，手动推算出合适的值。宽和高固定的情况下，码率随帧率的变化而变化。<br/>
+     *                  若选取的帧率为 5 FPS，则推算码率为上表推荐码率除以 2。<br/>
+     *                  若选取的帧率为 15 FPS，则推算码率为上表推荐码率。<br/>
+     *                  若选取的帧率为 30 FPS，则推算码率为上表码率乘以 1.5。<br/>
+     *                  若选取其余帧率，等比例推算即可。<br/>
+     *                  若对视频参数不太了解，建议使用 SDK 提供的视频质量等级，或根据 SDK 提供的视频质量等级相关参数，小范围动态调整。
+     *                  <p/>
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int setVideoProfile(int width, int height, int frameRate, int bitRate);
+
+    /**
+     * 配置本地视频渲染视图。
+     * <p/>
+     * 该 API 用于配置 SurfaceView 渲染视图，App 通过调用此接口绑定本地视频流与显示视图 (SurfaceView)，并设置视频显示模式。
+     * <p/>
+     * 通常在初始化后，调用 CreateRendererView 创建渲染视图，然后调用该 API 进行本地视频显示属性设置，最后 App 提供父布局并将渲染视图添加进去(addView)。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.离开频道后，绑定仍然有效，绑定无法解除。<br/>
+     * 2.SurfaceView 可重复使用，比如从布局中移除、添加等操作。
+     * <p/>
+     *
+     * @param local               视频显示属性对象 <br/>
+     * @param activityOrientation activity 的显示方向，获取方式 activity.getRequestedOrientationd() 。
+     *                            <p/>
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用失败，没有调用 enableVideo 。<br/>
+     */
+    public abstract int setupLocalVideo(VideoCanvas local, int activityOrientation);
+
+    /**
+     * 配置远端用户视频渲染视图。
+     *
+     * 该 API 用于绑定远程用户和显示视图，指定用户用哪个视图显示。调用该接口时需要指定远程视频的用户 ID，一般可以在进频道前提前设置好。
+     *
+     * @param remote 视频显示属性对象
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setupRemoteVideo(VideoCanvas remote);
+
+    /**
+     * 开启视频预览。
+     * <p/>
+     * SDK 视频模块功能默认处于关闭状态，调用前请确保已调用过 enableVideo(启用视频模块) ，否则调用无效。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.全局接口，leaveChannel(离开频道) 后状态不会清除，如需关闭预览，请调用 stopPreview 。<br/>
+     * 2.该 API 也受以下 API 控制，请注意覆盖逻辑。<br/>
+     * enableVideo：启用视频模块。<br/>
+     * disableVideo：关闭视频模块。<br/>
+     * 3.默认不开启镜像功能，如需要镜像功能，请参考 setVideoMirrored API 。
+     * <p/>
+     *
+     * @return 0 代表方法调用成功，其他代表失败<br/>
+     * ERROR_FUNCTION_ERROR_EMPTY_VALUE -1 ：SDK 内部出现空值错误。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用无效，enableVideo 或 enableLocalVideo API 处于关闭状态。<br/>
+     * ERROR_FUNCTION_ERROR_FAILED -6 ：调用失败，具体原因未知，请尝试再次调用。
+     */
+    public abstract int startPreview();
+
+    /**
+     * 停止视频预览。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.全局接口，leaveChannel(离开频道) 后状态不会清除，如需打开预览，请调用 startPreview 。<br/>
+     * 2.该 API 也受以下 API 控制，请注意覆盖逻辑。<br/>
+     * enableVideo：启用视频模块。<br/>
+     * disableVideo：关闭视频模块。<br/>
+     * <p/>
+     *
+     * @return 0 代表方法调用成功，其他代表失败<br/>
+     * ERROR_FUNCTION_ERROR_EMPTY_VALUE -1 ：SDK 内部出现空值错误。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用无效，enableVideo 或 enableLocalVideo API 处于关闭状态。<br/>
+     * ERROR_FUNCTION_ERROR_FAILED -6 ：调用失败，具体原因未知，请尝试再次调用。
+     */
+    public abstract int stopPreview();
+
+    /**
+     * 开/关本地视频功能。
+     * <p/>
+     * 禁用或重新启用本地视频编码和发送，不影响接收远端视频以及本地视频预览。
+     * <p/>
+     * 成功禁用或启用本地视频功能后，远端会触发 onUserEnableVideo 回调。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.全局接口，leaveChannel(离开频道) 后状态不会清除。<br/>
+     * 2.该 API 也受以下 API 控制，请注意覆盖逻辑。<br/>
+     * enableVideo：启用视频模块。<br/>
+     * disableVideo：关闭视频模块。<br/>
+     *
+     * @param enabled true 启用本地视频功能，false 本地视频功能
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int enableLocalVideo(boolean enabled);
+
+    /**
+     * 停止/恢复接收指定用户的视频流。
+     * <p/>
+     * 如果之前有调用过 muteAllRemoteVideoStreams (true) 停止接收所有远端视频流，在调用本 API 之前请确保你已调用
+     * muteAllRemoteVideoStreams (false)。 muteAllRemoteVideoStreams 是全局控制，muteRemoteVideoStream 是精细控制。
+     * <p/>
+     *
+     * @param uid   指定的用户 ID 。<br/>
+     * @param muted true：停止接收指定用户的视频流，false：继续接收指定用户的视频流（默认）。
+     *              <p/>
+     * @return 0 代表方法调用成功，其他代表失败<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用失败，未找到指定用户的视频设备信息，请尝试重新调用。
+     */
+    public abstract int muteRemoteVideoStream(long uid, boolean muted);
+
+    /**
+     * 停止/恢复接收指定用户的视频流。
+     * <p/>
+     * 如果之前有调用过 muteAllRemoteVideoStreams (true) 停止接收所有远端视频流，在调用本 API 之前请确保你已调用
+     * muteAllRemoteVideoStreams (false)。 muteAllRemoteVideoStreams 是全局控制，muteRemoteVideoStream 是精细控制。
+     * <p/>
+     *
+     * @param uid   指定的用户 ID 。<br/>
+     * @param devId 指定的用户设备 ID 。<br/>
+     * @param muted true：停止接收指定用户的视频流，false：继续接收指定用户的视频流（默认）。
+     *              <p/>
+     * @return 0 代表方法调用成功，其他代表失败<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：调用失败，未找到指定用户的视频设备信息，请尝试重新调用。
+     */
+    public abstract int muteRemoteVideoStream(long uid, String devId, boolean muted);
+
+    /**
+     * 停止/恢复接收所有视频流。
+     *
+     * @param muted true: 停止接收所有远端视频流，false: 继续接收所有远端视频流（默认）。
+     *              <p/>
+     * @return 0 代表方法调用成功，暂无错误返回。
+     */
+    public abstract int muteAllRemoteVideoStreams(boolean muted);
+
+    /**
+     * 创建渲染视图。
+     * <p/>
+     * 该 API 创建视频渲染视图，返回 SurfaceView 的类型。View 的操作和布局由 App 管理， SDK 在 App 提供的 View 上进行渲染。
+     *
+     * @param context 安卓活动 (Android Activity) 的上下文
+     *                <p/>
+     * @return SurfaceView
+     */
+    public abstract SurfaceView CreateRendererView(Context context);
+
+    // ----------- 音频播放路由
+
+    /**
+     * 修改默认的语音路由,只适用于纯音频模式并且需要在进房间之前调用
+     *
+     * @param defaultToSpeaker true 默认路由改为外放(扬声器)，false 默认路由改为听筒
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setDefaultAudioRouteToSpeakerphone(boolean defaultToSpeaker);
+
+    /**
+     * 设置扬声器的打开/关闭
+     *
+     * @param enabled true 打开扬声器(若已插入耳机、蓝牙等设备，也将切换到扬声器)，
+     *                false 关闭扬声器，切为听筒
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setEnableSpeakerphone(boolean enabled);
+
+    /**
+     * 获取当前扬声器的状态.
+     *
+     * @return true 表示扬声器处于打开状态，false表示听筒处于打开状态
+     */
+    public abstract boolean isSpeakerphoneEnabled();
+
+    // ----------- 耳返设置
+
+    /**
+     * 是否启用耳返
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int enableAudioEarBack(boolean enableEarsBack);
+
+    /**
+     * 设置耳返音量，在打开耳返的情况下有效
+     *
+     * @param volume 设置耳返音量，取值范围在 [0,100] 默认值为 100
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setAudioEarBackVolume(int volume);
+
+    // ----------- 音乐文件播放及混音设置
+
+    /**
+     * 开始客户端本地混音。指定本地音频文件来和麦克风采集的音频流进行混音和替换(用音频文件替换麦克风采集的音频流)，
+     * 可以通过参数选择是否让对方听到本地播放的音频和指定循环播放的次数。
+     *
+     * @param filePath 指定需要混音的本地音频文件名和文件路径。支持以下音频格式：mp3, aac, m4a, 3gp, wav, flac。
+     * @param loopback True只有本地可以听到混音或替换后的音频流，False本地和对方都可以听到混音或替换后的音频流。
+     * @param replace  True音频文件内容将会替换本地录音的音频流，False音频文件内容将会和麦克风采集的音频流进行混音
+     * @param cycle    指定音频文件循环播放的次数。正整数代表循环的次数
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int startAudioMixing(String filePath,
+                                         boolean loopback, boolean replace, int cycle);
+
+    /**
+     * 使用该方法停止伴奏播放，请在频道内调用该方法。
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int stopAudioMixing();
+
+    /**
+     * 使用该方法暂停伴奏播放。请在频道内调用该方法。
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int pauseAudioMixing();
+
+    /**
+     * 使用该方法恢复混音，继续播放伴奏。请在频道内调用该方法。.
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int resumeAudioMixing();
+
+    /**
+     * 使用该方法同时调节伴奏本地和远端的播放音量大小。
+     *
+     * @param volume 伴奏音量范围为0~100。默认100为原始文件音量。
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int adjustAudioMixingVolume(int volume);
+
+    /**
+     * 调节伴奏本地播放音量。
+     *
+     * @param volume 伴奏音量范围为0~100。默认50为原始文件音量。
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int adjustAudioMixingPlayoutVolume(int volume);
+
+    /**
+     * 调节伴奏远端播放音量。
+     *
+     * @param volume 伴奏音量范围为0~100。默认50为原始文件音量。
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int adjustAudioMixingPublishVolume(int volume);
+
+    /**
+     * 使用该方法获取伴奏时长，单位为毫秒。请在频道内调用该方法。
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int getAudioMixingDuration();
+
+    /**
+     * 使用该方法获取当前伴奏播放进度，单位为毫秒。请在频道内调用该方法。
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int getAudioMixingCurrentPosition();
+
+    /**
+     * 使用该方法设置音乐文件的播放位置。请在频道内调用该方法。
+     *
+     * @param millisecond 毫秒
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setAudioMixingPosition(long millisecond);
+
+    // ----------- 音效文件播放管理
+
+    public abstract IAudioEffectManager getAudioEffectManager();
+
+    // ----------- 网络相关测试
+
+    /**
+     * 启动网络测试。
+     * <p>
+     * 该方法启用网络连接质量测试，用于检测用户网络接入质量。默认该功能为关闭状态。该方法主要用于以下两种场景：
+     * <p>
+     * 用户加入频道前，可以调用该方法判断和预测目前的上行网络质量是否足够好。
+     * 直播模式下，当用户角色想由观众切换为主播时，可以调用该方法判断和预测目前的上行网络质量是否足够好。
+     * 无论哪种场景，启用该方法会消耗一定的网络流量，影响通话质量。在收到 {@link TTTRtcEngineEventHandler#onLastmileQuality(int)} 回调后须调用 {@link TTTRtcEngine#disableLastmileTest()} 停止测试，再加入频道。
+     * <p>
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int enableLastmileTest();
+
+    /**
+     * 禁用网络测试。
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int disableLastmileTest();
+
+    // ------------ 音频自采集
+
+    /**
+     * 该方法设置是否使用外部音频源。
+     *
+     * @param enable     是否使用外部音频源。true使用，false不使用
+     * @param sampleRate 外部音频源的采样率
+     * @param channels   外部音频源的通道数，支持的参数为单声道(1)，双声道(2)
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setExternalAudioSource(boolean enable, int sampleRate, int channels);
+
+    /**
+     * 推送外部音频帧
+     *
+     * @param data 外部音频数据
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int pushExternalAudioFrame(byte[] data);
+
+    // ----------- 原始音频数据
+
+    /**
+     * 是否启用本地/远端音频裸数据的回调上报，默认禁用
+     *
+     * @param isLocalEable   true代表启用本地音频上报，false代表禁用本地音频上报
+     * @param isRemoteEnable true代表启用远端音频上报，false代表禁用远端音频上报
+     */
+    public abstract void enableAudioDataReport(boolean isLocalEable, boolean isRemoteEnable);
+
+    /**
+     * 启用/禁用本地和远端音频混音后的裸数据上报，默认禁用
+     *
+     * @param enabled true代表启用上报，false代表禁用上报
+     */
+    public abstract void enableMixAudioDataReport(boolean enabled);
+
+    /**
+     * 设置本地音频裸数据的采样率，声道数和采样点数
+     *
+     * @param sampleRate     采样率，可设置为 8000，16000，32000，44100 或 48000
+     * @param channel        声道数，最多支持两个声道
+     * @param samplesPerCall 采样点数
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setRecordingAudioFrameParameters(int sampleRate, int channel, int samplesPerCall);
+
+    /**
+     * 设置远端音频裸数据的采样率，声道数和采样点数
+     *
+     * @param sampleRate     采样率，可设置为 8000，16000，32000，44100 或 48000
+     * @param channel        声道数，最多支持两个声道
+     * @param samplesPerCall 采样点数
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setPlaybackAudioFrameParameters(int sampleRate, int channel, int samplesPerCall);
+
+    /**
+     * 设置本地和远端音频混音裸数据的采样率，声道数和采样点数
+     *
+     * @param sampleRate     采样率，可设置为 8000，16000，32000，44100 或 48000
+     * @param channel        声道数，最多支持两个声道
+     * @param samplesPerCall 采样点数
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setMixedAudioFrameParameters(int sampleRate, int channel, int samplesPerCall);
+
+    // ----------- 视频自采集（仅适用于 Push 模式）
+
+    /**
+     * 该方法设置是否使用外部视频源
+     *
+     * @param enable     是否使用外部视频源。true使用，false不使用
+     * @param useTexture 是否使用Texture作为输入。true使用，false不使用
+     * @param pushMode   是否外部视频源需要调用PushVideoFrame将视频帧主动推送给SDK。
+     *                   True使用推送(push)模式，False使用拉(pull) 模式(暂不支持)
+     */
+    public abstract int setExternalVideoSource(boolean enable, boolean useTexture, boolean pushMode);
+
+    /**
+     * 推送外部视频帧
+     *
+     * @param mFrame 该视频帧包含待SDK编码的视频数据。
+     * @return True该帧已推送成功，False该帧已推送失败
+     */
+    public abstract boolean pushExternalVideoFrame(TTTVideoFrame mFrame);
+
+    /**
+     * 该方法检查该设备是否支持 texture 编码。
+     *
+     * @return True支持Texture编码，False不支持Texture编码
+     */
+    public abstract boolean isTextureEncodeSupported();
+
+    // ----------- 视频双流模式
+
+    /**
+     * 设置是否启用视频双流模式。
+     *
+     * @param isEnable true代表启用双流模式，false代表关闭双流模式
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int enableDualStreamMode(boolean isEnable);
+
+    /**
+     * 设置视频大小流
+     * 如果远端用户选择发送双流(视频大流和小流), 该方法指定接收远端用户的视频流大小。see {@link Constants#VIDEO_STEAM_TYPE_BIG}
+     *
+     * @param uid       用户ID
+     * @param steamType 视频流类型
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setRemoteVideoStream(long uid, int steamType);
+
+    /**
+     * 设置默认订阅的视频流类型。
+     *
+     * @param streamType 设置视频流大小。视频流类型如下：<br/>
+     *                   {@link Constants#VIDEO_STEAM_TYPE_BIG} 视频大流，即高分辨率、高码率视频流。<br/>
+     *                   {@link Constants#VIDEO_STEAM_TYPE_SMALL} 视频小流，即低分辨率、低码率视频流。<br/>
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setRemoteDefaultVideoStreamType(int streamType);
+
+    // ----------- 摄像头控制
+
+    /**
+     * 翻转本地预览摄像头
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int switchCamera();
+
+    /**
+     * 控制本地视频预览是否镜像，暂只支持前置摄像头。
+     *
+     * @param mIsMirrored         水平镜像true启用，false不启用，默认false
+     * @param mIsVerticalMirrored 垂直镜像true启用，false不启用，默认false
+     */
+    public abstract void setVideoMirrored(boolean mIsMirrored, boolean mIsVerticalMirrored);
+
+    /**
+     * 检测设备是否支持摄像头缩放功能。
+     *
+     * @return true：设备支持相机缩放功能，false：设备不支持相机缩放功能
+     */
+    public abstract boolean isCameraZoomSupported();
+
+    /**
+     * 检测设备是否支持闪光灯常开。<br/>
+     * 一般情况下，App 默认开启前置摄像头，因此如果你的前置摄像头不支持闪光灯常开，<br/>
+     * 直接使用该方法会返回 false。如果需要检查后置摄像头是否支持闪光灯常开，需要先使用 switchCamera 切换摄像头，再使用该方法。<br/>
+     *
+     * @return true：设备支持闪光灯常开，false：设备不支持闪光灯常开
+     */
+    public abstract boolean isCameraTorchSupported();
+
+    /**
+     * 检测设备是否支持手动对焦功能。
+     *
+     * @return true：设备支持手动对焦功能，false：设备不支持手动对焦功能
+     */
+    public abstract boolean isCameraFocusSupported();
+
+    /**
+     * 检测设备是否支持手动曝光功能。
+     *
+     * @return true：设置支持手动曝光功能，false：设备不支持手动曝光功能
+     */
+    public abstract boolean isCameraExposurePositionSupported();
+
+    /**
+     * 检测设备是否支持人脸对焦功能。
+     *
+     * @return true：设备支持人脸对焦功能，false：设备不支持人脸对焦功能
+     */
+    public abstract boolean isCameraAutoFocusFaceModeSupported();
+
+    /**
+     * 设置摄像头缩放比例。
+     *
+     * @param factor 相机缩放比例，有效范围从 1.0 到最大缩放
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract boolean setCameraZoomFactor(int factor);
+
+    /**
+     * 获取摄像头支持最大缩放比例。
+     *
+     * @return 该相机支持的最大缩放比例。
+     */
+    public abstract int getCameraMaxZoomFactor();
+
+    /**
+     * 设置是否打开闪光灯。
+     *
+     * @return true：打开，false：关闭
+     */
+    public abstract boolean setCameraTorchOn(boolean isOpen);
+
+    /**
+     * 控制推流的视频是否镜像。
+     *
+     * @param mIsMirrored 水平镜像true启用，false不启用，默认false
+     */
+    public abstract void setRemoteVideoMirrored(boolean mIsMirrored);
+
+    /**
+     * 开/关 SDK 自带的美颜功能，默认开启。
+     * <p/>
+     * 美颜功能包含两种基础效果，磨皮以及明亮度。其他的美颜效果 SDK 暂无法提供，如有高级的美颜或美型需求，请联系三体的工作人员咨询。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.全局接口，leaveChannel(离开频道) 后状态不会清除。<br/>
+     * 2.加入频道前、频道后设置均有效，支持动态开/关。<br/>
+     * 3.若 App 集成了第三方的美颜 SDK ，需要手动将三体 SDK 的基础美颜功能关闭，否则可能会影响美颜 SDK 的渲染效果。
+     * <p/>
+     *
+     * @param mEnable      true 开启美颜功能，false 关闭美颜功能。<br/>
+     * @param mBeautyLevel 磨皮的强度，参数设置范围0f ~ 1f，默认0.5f。<br/>
+     * @param mBrightLevel 明亮的强度，参数设置范围0f ~ 1f，默认0.5f。
+     *                     <p/>
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：参数不合法，API 要求的范围为 0 ~ 1f 之间。
+     */
+    public abstract int setBeautyFaceStatus(boolean mEnable, float mBeautyLevel, float mBrightLevel);
+
+    // ----------- 屏幕共享
+
+    /**
+     * 提醒用户当前程序要开始录制屏幕。
+     *
+     * @param mActivity 当前要录屏时激活的Activity
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int tryRecordScreen(Activity mActivity);
+
+    /**
+     * 是否正在屏幕录制。
+     *
+     * @return YES: 是，NO: 否。
+     */
+    public abstract boolean isScreenRecording();
+
+    /**
+     * 获得权限后开始录制屏幕用作视频源。
+     *
+     * @param data    系统返回的Intent对象
+     * @param mConfig 屏幕录制相关设置参数对象
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int startRecordScreen(Intent data, ScreenRecordConfig mConfig);
+
+    /**
+     * 获得权限后开始录制屏幕保存到本地相册中。
+     *
+     * @param data    系统返回的Intent对象
+     * @param mConfig 屏幕录制相关设置参数对象
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int startRecordScreenAndSave(Intent data, ScreenRecordConfig mConfig);
+
+    /**
+     * 停止录制屏幕。
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int stopScreenCapture();
+
+    // ----------- CDN推流设置
+
+    /**
+     * 配置旁路直播推流。
+     * <p/>
+     * 用于在加入频道前为引擎创建一份推流配置。
+     * <p/>
+     * 使用注意：<br/>
+     * 1.加入频道后设置无效。<br/>
+     * 2.离开频道，所设置的参数失效，需要每次加入频道都设置。<br/>
+     * <p/>
+     *
+     * @param config 封装配置信息的类，提供的参数设置如下：<br/>
+     *               {@link PublisherConfiguration#setPushUrl(String)} 设置旁路直播推流地址。<br/>
+     *               {@link PublisherConfiguration#setmPureAudio(boolean)} 设置旁路推流为音视频流还是纯音频流，设置为纯音频推流不影响视频模块功能。<br/>
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数为空。
+     */
+    public abstract int configPublisher(PublisherConfiguration config);
+
+    /**
+     * 设置画中画布局
+     *
+     * @param layout the layout
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setVideoCompositingLayout(VideoCompositingLayout layout);
+
+    /**
+     * 设置连麦混屏的视频相关参数
+     * 使用注意：<br/>
+     * 1.仅在加入频道前设置生效，频道内设置无效。<br/>
+     *
+     * @param bitrate 码率 单位kbps
+     * @param fps     帧率
+     * @param width   视频宽度
+     * @param height  视频高度
+     */
+    public abstract int setVideoMixerParams(int bitrate, int fps, int width, int height);
+
+    /**
+     * 设置连麦混屏的音频相关参数
+     * 使用注意：<br/>
+     * 1.仅在加入频道前设置生效，频道内设置无效。<br/>
+     *
+     * @param bitrate    码率 单位kbps, 取值范围 0~192
+     * @param samplerate 采样率 ：8000， 16000， 24000， 32000， 44100， 48000
+     * @param channels   通道数 ：1， 2
+     */
+    public abstract int setAudioMixerParams(int bitrate, int samplerate, int channels);
+
+    /**
+     * 设置视频混屏的背景图片，默认是黑色背景。图片源仅支持http协议的网络地址，不支持本地图片路径，图片格式支持主流的jpg，png等<br/>
+     * 使用注意：<br/>
+     * 1.进频道前或频道内调用都有效。<br/>
+     * 2.退出频道，混屏背景图会自动销毁。<br/>
+     * 3.如果在频道中想清空之前设置的背景图，可传空字符串。<br/>
+     * 4.默认视频混屏的布局大小取本地视频编码大小，可通过接口 setVideoMixerParams 指定。<br/>
+     *
+     * @param url 背景图片所在的地址
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setVideoMixerBackgroundImgUrl(String url);
+
+    /**
+     * 设置视频混屏的背景图片，默认是黑色背景。图片源仅支持http协议的网络地址，不支持本地图片路径，图片格式支持主流的jpg，png等<br/>
+     * 该接口是多推流版本<br/>
+     * <p>
+     * 使用注意：<br/>
+     * 1.进频道前或频道内调用都有效。<br/>
+     * 2.退出频道，混屏背景图会自动销毁。<br/>
+     * 3.如果在频道中想清空之前设置的背景图，可传空字符串。<br/>
+     * 4.默认视频混屏的布局大小取本地视频编码大小，可通过接口 setVideoMixerParams 指定。<br/>
+     * <p>
+     *
+     * @param url       背景图片所在的地址
+     * @param streamUrl 旁路推流地址
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setVideoMixerBackgroundImgUrl(String url, String streamUrl);
+
+    /**
+     * 更新房间的推流地址
+     *
+     * @param rtmpUrl 推流的地址
+     */
+    public abstract int updateRtmpUrl(String rtmpUrl);
+
+    /**
+     * 增加旁路推流地址。SDK 会在本地触发 onRtmpStreamingStateChanged 回调，报告增加旁路推流地址的状态。
+     *
+     * @param url                旁路推流地址
+     * @param transcodingEnabled 是否转码
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int addPublishStreamUrl(String url, boolean transcodingEnabled);
+
+    /**
+     * 删除旁路推流地址。SDK 会在本地触发 onRtmpStreamingStateChanged 回调，报告删除旁路推流地址的状态。
+     *
+     * @param url 旁路推流地址
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int removePublishStreamUrl(String url);
+
+    // ----------- 跨房间连麦
+
+    /**
+     * 与其他房间的主播连麦
+     *
+     * @param channelID 对方房间的ID
+     */
+    public abstract int subscribeOtherChannel(long channelID);
+
+    /**
+     * 结束当前与其他房间的主播的连麦
+     *
+     * @param channelID 对方房间的ID
+     */
+    public abstract int unSubscribeOtherChannel(long channelID);
+
+    /**
+     * 与其他主播连麦
+     *
+     * @param channelID 对方房间的ID
+     * @param uid       对方主播的userId
+     */
+    @Deprecated
+    public abstract int linkOtherAnchor(long channelID, long uid);
+
+    /**
+     * 结束与其他主播连麦
+     *
+     * @param channelID 对方房间的ID
+     * @param uid       对方主播的userId
+     * @param devID     对方的设备ID
+     */
+    @Deprecated
+    public abstract int unlinkOtherAnchor(long channelID, long uid, String devID);
+
+    // ----------- 其他方法
+
+    /**
+     * 设置是否启用跨房间连麦
+     * 若未启用，多个主播进入同一个房间，前面的主播会被踢下线
+     *
+     * @param isEnable 是否启用
+     */
+    public abstract void enableCrossRoom(boolean isEnable);
+
+    /**
+     * 设置SDK日志输出目录，注意要保证指定的文件是存在并可写入的。
+     *
+     * @param mLogFilePath 应用程序必须保证指定的目录存在而且可写。
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setLogFile(String mLogFilePath);
+
+    /**
+     * 设置SDK日志输出的过滤器
+     *
+     * @param filter 过滤器可分4个 {@link Constants#LOG_FILTER_INFO}
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setLogFilter(int filter);
+
+    /**
+     * 设置信令超时时间
+     *
+     * @param timeout 默认90秒
+     */
+    public abstract void setSignalTimeout(int timeout);
+
+    /**
+     * 将某个用户请出直播房间
+     *
+     * @param uid 被请出的用户ID
+     * @return 是否成功将用户请出
+     */
+    public abstract boolean kickChannelUser(long uid);
+
+    /**
+     * 设置服务器地址
+     *
+     * @param ip   ip地址或域名
+     * @param port 端口
+     */
+    public abstract void setServerIp(String ip, int port);
+
+    /**
+     * 是否辅播也启用混屏视频流
+     *
+     * @param enable true启用，false不启用。默认不启用。
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int enableVideoMixer(boolean enable);
+
+    /**
+     * 设置远端混屏视频显示属性
+     *
+     * @param remote 视频显示属性对象
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setupRemoteVideoMixer(TTTVideoMixerCanvas remote);
+
+    /**
+     * 向h.264码流中插入sei内容
+     *
+     * @param content 字符串内容
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int insertH264SeiContent(String content);
+
+    /**
+     * 获取Akamai的server id
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int getAkamai(String mAPPID, String channelName);
+
+    /**
+     * 获取网络连接状态
+     *
+     * @return 返回当前网络连接状态，类型如下：
+     * {@link Constants#TTT_CS_DISCONNECTED} 未加入房间,加入房间失败后，或者离开房间之后。<br/>
+     * {@link Constants#TTT_CS_CONNECTING} 加入房间正在建立网络连接。<br/>
+     * {@link Constants#TTT_CS_CONNECTED} 网络连接建立成功。<br/>
+     * {@link Constants#TTT_CS_RECONNECTING} 网络连接重连中。<br/>
+     * {@link Constants#TTT_CS_FAILED} 网络连接失败。<br/>
+     */
+    public abstract int getConnectionState();
+
+    /**
+     * 获取当前摄像头的ID，类型如下：<br/>
+     * {@link Constants#TTT_CAMERA_FRONT} 代表前置摄像头。<br/>
+     * {@link Constants#TTT_CAMERA_BACK} 代表后置摄像头。<br/>
+     * {@link Constants#TTT_CAMERA_EXTERNAL} 代表外置摄像头。<br/>
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int getCameraFace();
+
+    /**
+     * 发送伴奏歌曲的歌词信息
+     *
+     * @param lyric 歌词内容
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int sendAudioLyric(String lyric);
+
+    /**
+     * 设置音频应用场景。不同的音频场景下，设备的系统音量是不同的，对音频的优化侧重点也不同，默认值为通话应用场景<br/>
+     * <p>
+     * 使用目的：当默认值不满足当前应用场景或应用场景发生变化<br/>
+     * 使用注意：
+     * 1.该方法需要在 joinChannel 之前设置好，joinChannel 后设置不生效。<br/>
+     * 2.若不清楚如何选择场景配置，可以联系技术支持，获取建议和帮助。<br/>
+     * <p>
+     * 枚举值:<br/>
+     * {@link Constants#TTT_AUDIO_SCENE_LIVE}<br/>
+     * {@link Constants#TTT_AUDIO_SCENE_VOICE_CALL}<br/>
+     * {@link Constants#TTT_AUDIO_SCENE_AUTO_CHANGE}<br/>
+     * {@link Constants#TTT_AUDIO_SCENE_KTV}<br/>
+     *
+     * @return 0 代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int setAudioApplicationScene(int scene);
+
+    // ----------- 本地音频录音
+
+    /**
+     * 开始客户端本地音频录音
+     *
+     * @param filePath 录音文件的本地保存路径: xxx/.../xxx.aac
+     * @param quality  录音质量，类型如下：<br/>
+     *                 {@link Constants#TTT_AUDIO_RECORDING_QUALITY_LOW} 低音质。采样率为 48 kHz，码率 16 kpbs，录制 10 分钟的文件大小为 1.2 M 左右。<br/>
+     *                 {@link Constants#TTT_AUDIO_RECORDING_QUALITY_MEDIUM} 中音质。采样率为 48 kHz，码率 32 kpbs，录制 10 分钟的文件大小为 2 M 左右。<br/>
+     *                 {@link Constants#TTT_AUDIO_RECORDING_QUALITY_HIGH} 高音质。采样率为 48 kHz，码率 64 kpbs，录制 10 分钟的文件大小为 3.75 M 左右。<br/>
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int startAudioRecording(String filePath, int quality);
+
+    /**
+     * 停止客户端本地音频录音
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int stopAudioRecording();
+
+    //------------------------聊天模块函数------------------------------
+
+    /**
+     * 发送聊天信息
+     *
+     * @param nDstUserID 目标ID
+     * @param type       消息类型
+     * @param sSeqID     消息唯一标识
+     * @param sData      消息内容
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int sendChatMessage(long nDstUserID, int type, String sSeqID, String sData);
+
+    /**
+     * 发送信令
+     *
+     * @param nDstUserID 目标ID
+     * @param sSeqID     消息唯一标识
+     * @param sData      消息内容
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int sendSignal(long nDstUserID, String sSeqID, String sData);
+
+    /**
+     * 开始采集聊天语音（限制60s以内）
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int startRecordChatAudio();
+
+    /**
+     * 停止采集并且发送语音消息
+     *
+     * @param nDstUserID 目标ID
+     * @param sSeqID     消息唯一标识
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int stopRecordAndSendChatAudio(long nDstUserID, String sSeqID);
+
+    /**
+     * 取消语音采集
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int cancelRecordChatAudio();
+
+    /**
+     * 播放语音消息
+     *
+     * @param audioPath 语音文件路径
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int startPlayChatAudioFileName(String audioPath);
+
+    /**
+     * 停止播放语音消息
+     *
+     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+     */
+    public abstract int stopPlayChatAudio();
+
+    /**
+     * 是否正在播放语音消息
+     *
+     * @return true：正在播放 false：没有播放
+     */
+    public abstract boolean isChatAudioPlaying();
+
+    //------------------------聊天模块函数------------------------------
+
+    //------------------------直推模块的函数------------------------------
+
+    /**
+     * 开始 RTMP 直接推流。<br/>
+     * <p>
+     * 使用注意：<br/>
+     * 1.与joinChannel 加入频道的流程不冲突，相互独立存在。它们之间的区别：<br/>
+     * 1.1.RTMP 直推受网络质量影响较大，不经过3T-RTN网络，弱网表示较差。<br/>
+     * 1.2.通过 joinChannel 加入频道推流，开始/结束连麦流程会更顺畅。而 RTMP 直推切换至连麦流程，
+     * 比较复杂，涉及加入/退出频道流程、开始/停止 RTMP 推流等。<br/>
+     * <p>
+     *
+     * @param rtmpUrl 要推的 rtmp 的 url 地址
+     *                <p>
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_STATED -3 ：已经处于推流状态。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数为空。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：方法调用失败，请尝试重新调用。
+     */
+    public abstract int startRtmpPublish(String rtmpUrl);
+
+    /**
+     * 结束 RTMP 直接推流。<br/>
+     * <p>
+     *
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_STATED -3 ：已经处于停止推流状态。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数为空。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：方法调用失败，请尝试重新调用。
+     */
+    public abstract int stopRtmpPublish();
+
+    /**
+     * 暂停RTMP推流。
+     *
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数为空。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：方法调用失败，请尝试重新调用。
+     */
+    public abstract int pauseRtmpPublish();
+
+    /**
+     * 恢复RTMP推流。
+     *
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_ERROR_ARGS -5 ：传递的参数为空。<br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：方法调用失败，请尝试重新调用。
+     */
+    public abstract int resumeRtmpPublish();
+
+    //------------------------直推模块的函数------------------------------
+
+    //------------------------IJK模块的函数------------------------------ // FIXME IOS 没有该模块接口
+
+    /**
+     * 创建 IjkVideoView 控件，然后调用 startIjkPlayer 接口开始音视频拉流。<br/>
+     * <p>
+     *
+     * @param context 安卓上下文
+     * @return 返回 null 表示创建失败。<br/>
+     */
+    public abstract IjkVideoView CreateIjkRendererView(Context context); //IJK_MODULE_CreateIjkRendererView
+
+    /**
+     * 根据传入的视频流地址，通过 IjkVideoView 控件开始音视频拉流播放。<br/>
+     * <p>
+     * 使用注意：<br/>
+     * 1.调用该接口前，需要先调用接口 CreateIjkRendererView 创建出 IjkVideoView 控件，否则调用无效。<br/>
+     * 2.通过 IjkVideoView 拉流播放音视频，与 joinChannel 加入频道的流程不冲突，相互独立存在。它们之间的区别：<br/>
+     * 2.1.IjkVideoView 会有更大的音视频延迟。<br/>
+     * 2.2.通过 joinChannel 加入频道播放音视频，用户上下麦的流程会更加顺畅，只需要观众和副播角色互相切换即可。而 IjkVideoView 上下麦的流程
+     * 比较复杂，涉及加入/退出频道，开始/停止 IjkVideoView 拉流等。<br/>
+     * <p>
+     *
+     * @param url           视频源路径，支持协议rtmp，http/https，以及本地视频文件路径。
+     * @param mIsNormalPull true 代表普通的拉流，false 代表启用 KTV 功能并拉流。KTV 功能请看链接中的介绍 https://github.com/santiyun/Android-KTV
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_STATED -3 ：已经处于拉流的状态。 <br/>
+     * ERROR_FUNCTION_INVOKE_ERROR -4 ：IjkVideoView 控件没有创建，需要先调用 CreateIjkRendererView 接口。 <br/>
+     */
+    public abstract int startIjkPlayer(String url, boolean mIsNormalPull);
+
+    /**
+     * 停止 IjkVideoView 控件的音视频流播放。<br/>
+     * <p>
+     *
+     * @return 0 代表方法调用成功，其他代表失败。<br/>
+     * ERROR_FUNCTION_STATED -3 ：已经处于停止状态。 <br/>
+     */
+    public abstract int stopIjkPlayer();
+
+//    /**
+//     * 静音/取消静音。该方法用于允许/禁止拉取远端音频流。
+//     *
+//     * @param muted 静音/取消静音
+//     * @return 0代表方法调用成功，其他代表失败。see {@link LocalSDKConstants#FUNCTION_SUCCESS}
+//     */
+//    public abstract int muteIjkAudioStream(boolean muted);
+
+    //------------------------IJK模块的函数------------------------------
+    public abstract TTTRtcEngineExtend getTTTRtcEngineExtend();
+}
