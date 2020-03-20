@@ -29,7 +29,7 @@ public class CmdExecuteHelper implements ProcExecHandler.ProcessOutputListener {
                         if (last_cmd != null && last_cmd.contains("gradle")) {
                             MyLog.log(TAG, "Sleep and execute next gradle cmd");
                             try {
-                                Thread.sleep(1000);  // FIXME 执行多个gradle命令时需要暂停一下，否则执行下一个命令有可能卡住不动，具体原因未知。
+                                Thread.sleep(2000);  // FIXME 执行多个gradle命令时需要暂停一下，否则执行下一个命令有可能卡住不动，具体原因未知。
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -52,7 +52,7 @@ public class CmdExecuteHelper implements ProcExecHandler.ProcessOutputListener {
                 }
                 MyLog.log(TAG, "Process destory : " + process);
                 try {
-                    Thread.sleep(1000);  // FIXME 执行多个gradle命令时需要暂停一下，否则执行下一个命令有可能卡住不动，具体原因未知。
+                    Thread.sleep(2000);  // FIXME 执行多个gradle命令时需要暂停一下，否则执行下一个命令有可能卡住不动，具体原因未知。
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

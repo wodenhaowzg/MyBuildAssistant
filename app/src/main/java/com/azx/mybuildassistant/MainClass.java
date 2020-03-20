@@ -1,5 +1,7 @@
 package com.azx.mybuildassistant;
 
+import com.azx.mybuildassistant.santiyun.sdk.BuildEntry;
+
 public class MainClass {
 
     public static void main(String[] args) {
@@ -16,7 +18,7 @@ public class MainClass {
 //        ExtractExposedObjectTask task = new ExtractExposedObjectTask();
 //        task.start();
 
-//        CompileClientKit task = new CompileClientKit();
-//        task.start();
+        BuildEntry task = new BuildEntry();
+        task.start();
     }
 }

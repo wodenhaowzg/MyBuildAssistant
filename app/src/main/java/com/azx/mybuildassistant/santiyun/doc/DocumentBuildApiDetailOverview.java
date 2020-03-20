@@ -27,9 +27,12 @@ public class DocumentBuildApiDetailOverview {
         if (funcSplit[0].equals("static") && funcSplit[1].equals("synchronized")) {
             sb1.append(funcSplit[0]).append(" ").append(funcSplit[1]).append(" ").append(funcSplit[2]);
             index = 3;
-        } else {
+        } else if (funcSplit[0].equals("abstract") || funcSplit[0].equals("static")) { // abstract
             sb1.append(funcSplit[0]).append(" ").append(funcSplit[1]);
             index = 2;
+        } else {
+            sb1.append(funcSplit[0]);
+            index = 1;
         }
 
         for (int i = index; i < funcSplit.length; i++) {

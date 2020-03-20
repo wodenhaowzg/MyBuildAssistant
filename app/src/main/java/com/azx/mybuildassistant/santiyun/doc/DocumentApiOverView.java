@@ -4,10 +4,12 @@ import java.util.List;
 
 class DocumentApiOverView {
 
-    private static final String WEB_LINK = "http://doc3.3ttech.cn/live/client-api/android/methods.html";
-    private static final String WEB_CALLBACK_LINK = "http://doc3.3ttech.cn/live/client-api/android/callbacks.html";
+    private static final String WEB_LINK = "/live/client-api/android/methods.html";
+    private static final String WEB_CALLBACK_LINK = "/live/client-api/android/callbacks.html";
 
-    String buildDocument(List<DocumentInitData.FunCodeBlock> funCodeBlocks, List<DocumentInitData.FunCodeBlock> callBackFunCodeBlocks) {
+    String buildDocument(List<DocumentInitData.FunCodeBlock> funCodeBlocks,
+                         List<DocumentInitData.FunCodeBlock> audioEffectFunCodeBlocks,
+                         List<DocumentInitData.FunCodeBlock> callBackFunCodeBlocks) {
         StringBuilder sb = new StringBuilder();
         sb.append("# 概述\n");
         sb.append("# TTT Java API Reference for Android\n");
@@ -26,6 +28,13 @@ class DocumentApiOverView {
             sb.append("| [").append(funCodeBlock.funName).append("]");
             sb.append("(").append(WEB_LINK).append("#").append(funCodeBlock.funName).append(")");
             sb.append(" | ").append(funCodeBlock.funSimpleComment).append(" |").append("\n");
+            if (funCodeBlock.funName.equals("getAudioEffectManager")) {
+                for (DocumentInitData.FunCodeBlock audioEffectFunCodeBlock : audioEffectFunCodeBlocks) {
+                    sb.append("| [").append(audioEffectFunCodeBlock.funName).append("]");
+                    sb.append("(").append(WEB_LINK).append("#").append(audioEffectFunCodeBlock.funName).append(")");
+                    sb.append(" | ").append(audioEffectFunCodeBlock.funSimpleComment).append(" |").append("\n");
+                }
+            }
         }
         sb.append("\n");
         sb.append("\n## 回调\n");

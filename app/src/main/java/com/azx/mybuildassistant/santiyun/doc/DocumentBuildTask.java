@@ -24,6 +24,7 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
     private static final String TAG = DocumentBuildTask.class.getSimpleName();
 
     private static final String TTTRTC_INTER_FILE = WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/TTTRtcEngine.java";
+    private static final String TTTRTC_EFFECT_INTER_FILE = WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/IAudioEffectManager.java";
     private static final String TTTRTC_CALLBACK_FILE = ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/inter/TTTRtcEngineEventInter.java";
     private static final String TTTRTC_CONSTANT_FILE = ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/library/Constants.java";
 
@@ -40,8 +41,8 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
             new DocClassBean("PublisherConfiguration", "直播推流配置", WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/model/PublisherConfiguration.java"),
             new DocClassBean("ScreenRecordConfig", "屏幕录制/分享配置信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/ScreenRecordConfig.java")};
 
-    private List<DocumentInitData.FunCodeBlock> funCodeBlocks, callbackFunCodeBlocks, constantsCodeBlocks;
-    private List<ApiDetailBean> apiDetailBeans, callBackApiDetailBeans;
+    private List<DocumentInitData.FunCodeBlock> funCodeBlocks, audioEffectFunCodeBlocks, callbackFunCodeBlocks, constantsCodeBlocks;
+    private List<ApiDetailBean> apiDetailBeans, audioEffectDetailBeans, callBackApiDetailBeans;
     private DocumentBuildApiDetailOverview documentBuildApiDetailOverview;
     private DocumentApiOverView documentApiOverView;
     private DocumentCallBack documentCallBack;
@@ -55,6 +56,13 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
         funCodeBlocks = documentInitData.initInterDatas(TTTRTC_INTER_FILE);
         if (DEBUG) {
             for (DocumentInitData.FunCodeBlock funCommentCodeBlock : funCodeBlocks) {
+                System.out.println(funCommentCodeBlock.toString());
+            }
+        }
+
+        audioEffectFunCodeBlocks = documentInitData.initInterDatas(TTTRTC_EFFECT_INTER_FILE);
+        if (DEBUG) {
+            for (DocumentInitData.FunCodeBlock funCommentCodeBlock : audioEffectFunCodeBlocks) {
                 System.out.println(funCommentCodeBlock.toString());
             }
         }
@@ -80,6 +88,7 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
         documentOther = new DocumentOther();
 
         apiDetailBeans = buildApiDetailBean(funCodeBlocks);
+        audioEffectDetailBeans = buildApiDetailBean(audioEffectFunCodeBlocks);
         callBackApiDetailBeans = buildApiDetailBean(callbackFunCodeBlocks);
 
         buildApiOverViewDoc();
@@ -95,19 +104,30 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
     }
 
     private void buildApiOverViewDoc() {
-        String str = documentApiOverView.buildDocument(funCodeBlocks, callbackFunCodeBlocks);
+        String str = documentApiOverView.buildDocument(funCodeBlocks, audioEffectFunCodeBlocks, callbackFunCodeBlocks);
         documentFileHolder.createDocFile(DOC_API_PATH, DOC_API_OVERVIEW_FILE_NAME, str);
     }
 
     private void buildApiDetailDoc() {
         for (DocumentInitData.FunCodeBlock mFunCommentCodeBlock : funCodeBlocks) {
             documentBuildApiDetailOverview.produceOverViewBean(mFunCommentCodeBlock.funFullName);
+            if (mFunCommentCodeBlock.funName.equals("getAudioEffectManager")) {
+                for (DocumentInitData.FunCodeBlock audioEffectFunCodeBlock : audioEffectFunCodeBlocks) {
+                    documentBuildApiDetailOverview.produceOverViewBean(audioEffectFunCodeBlock.funFullName);
+                }
+            }
         }
         StringBuilder result = new StringBuilder();
         result.append(documentBuildApiDetailOverview.buildOverViewDoc());
+        result.append("\n");
         result.append("\n## 详细描述\n");
         for (ApiDetailBean apiDetailBean : apiDetailBeans) {
             result.append(apiDetailBean.toString());
+            if (apiDetailBean.func_name.equals("getAudioEffectManager")) {
+                for (ApiDetailBean audioEffectDetailBean : audioEffectDetailBeans) {
+                    result.append(audioEffectDetailBean.toString());
+                }
+            }
         }
         DocumentFileHolder holder = new DocumentFileHolder();
         holder.createDocFile(DOC_API_PATH, DOC_API_DETAIL_FILE_NAME, result.toString());

@@ -62,9 +62,9 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask implements ProcExe
         CmdBean[] cmdBeans2 = buildCmd(video_chat_bean);
         mCmdExecuteHelper.executeCmdAdv(cmdBeans2);
 
-        PublishDemoBean audio_chat_bean = new PublishDemoBean(AUDIO_CHAT_PROJECT_PATH, AUDIO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, AIDEO_CHAT_APK_TARGET_NAME);
-        CmdBean[] cmdBeans3 = buildCmd(audio_chat_bean);
-        mCmdExecuteHelper.executeCmdAdv(cmdBeans3);
+//        PublishDemoBean audio_chat_bean = new PublishDemoBean(AUDIO_CHAT_PROJECT_PATH, AUDIO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, AIDEO_CHAT_APK_TARGET_NAME);
+//        CmdBean[] cmdBeans3 = buildCmd(audio_chat_bean);
+//        mCmdExecuteHelper.executeCmdAdv(cmdBeans3);
 
         CmdBean[] cmd4 = new CmdBean[]{
                 new CmdBean("open " + APK_OUTPUT_PATH, CMD_STOP_FLAG),

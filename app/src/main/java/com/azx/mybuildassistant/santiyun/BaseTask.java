@@ -14,9 +14,13 @@ public abstract class BaseTask {
 
     protected static final String JAVA_PATH = File.separator + "src" + File.separator + "main" + File.separator + "java";
 
-    protected static final String GRADLE = MACHINE_PATH + "/.gradle/wrapper/dists/gradle-5.4.1-all/3221gyojl5jsh0helicew7rwx/gradle-5.4.1/bin/gradle";
+    protected static final String GRADLE = MACHINE_PATH + File.separator + ".gradle" + File.separator + "wrapper" + File.separator +
+            "dists" + File.separator + "gradle-5.4.1-all" + File.separator + "3221gyojl5jsh0helicew7rwx" + File.separator +
+            "gradle-5.4.1" + File.separator + "bin" + File.separator + "gradle";
 
     protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSS");
+
+    protected boolean DEBUG = true;
 
     public abstract int start();
 

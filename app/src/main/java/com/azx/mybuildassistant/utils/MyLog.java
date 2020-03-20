@@ -25,8 +25,10 @@ public class MyLog {
     }
 
     public static void e(String tag, String msg) {
-        Logger loger = Logger.getGlobal();
-        String format = dateFormat.format(System.currentTimeMillis());
-        loger.log(Level.WARNING, tag + " -> " + format + " " + msg);
+        try {
+            throw new Exception(tag + " -> " + msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
