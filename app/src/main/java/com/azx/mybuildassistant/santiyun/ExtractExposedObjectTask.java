@@ -54,7 +54,7 @@ public class ExtractExposedObjectTask extends SanTiYunBaseTask {
             return;
         }
         // 打开目标窗口
-        executeCmd("open " + mNewSdkPath);
+//        executeCmd("open " + mNewSdkPath);
         // 打印路径，用比较器比较
         System.out.println(mNewSdkPath);
         System.out.println(mOldSdkPath);

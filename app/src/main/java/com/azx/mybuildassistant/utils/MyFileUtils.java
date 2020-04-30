@@ -16,18 +16,18 @@ public class MyFileUtils {
 
     public static File checkFileExist(String filePath) {
         if (MyTextUtils.isEmpty(filePath)) {
-            MyLog.e(TAG, "checkFileExist -> 源文件路径是空的！");
+            MyLog.error(TAG, "checkFileExist -> 源文件路径是空的！");
             return null;
         }
 
         File file = new File(filePath);
         if (!file.exists()) {
-            MyLog.e(TAG, "checkFileExist -> 源文件不存在！");
+            MyLog.error(TAG, "checkFileExist -> 源文件不存在！");
             return null;
         }
 
         if (!file.isFile()) {
-            MyLog.e(TAG, "checkFileExist -> 源文件的类型不是文件类型！");
+            MyLog.error(TAG, "checkFileExist -> 源文件的类型不是文件类型！");
             return null;
         }
         return file;
@@ -35,18 +35,18 @@ public class MyFileUtils {
 
     public static File checkFileDirExist(String filePath) {
         if (MyTextUtils.isEmpty(filePath)) {
-            MyLog.e(TAG, "checkFileDirExist -> 源文件夹路径是空的！");
+            MyLog.error(TAG, "checkFileDirExist -> 源文件夹路径是空的！");
             return null;
         }
 
         File file = new File(filePath);
         if (!file.exists()) {
-            MyLog.e(TAG, "checkFileExist -> 源文件夹不存在！");
+            MyLog.error(TAG, "checkFileExist -> 源文件夹不存在！");
             return null;
         }
 
         if (!file.isDirectory()) {
-            MyLog.e(TAG, "checkFileExist -> 源文件夹的类型不是文件夹类型！");
+            MyLog.error(TAG, "checkFileExist -> 源文件夹的类型不是文件夹类型！");
             return null;
         }
         return file;
@@ -55,7 +55,7 @@ public class MyFileUtils {
     public static boolean modifyFileContent(String filePath, FileContentListener fileContentListener) {
         File file = checkFileExist(filePath);
         if (file == null) {
-            MyLog.e(TAG, "modifyFileContent -> 检测参数失败！");
+            MyLog.error(TAG, "modifyFileContent -> 检测参数失败！");
             return false;
         }
 
@@ -77,7 +77,7 @@ public class MyFileUtils {
             file.delete();
             tempSaveFile.renameTo(file);
         } catch (Exception e) {
-            MyLog.e(TAG, "modifyFileContent -> 读取文件流的过程中出现异常！");
+            MyLog.error(TAG, "modifyFileContent -> 读取文件流的过程中出现异常！");
             e.printStackTrace();
             return false;
         } finally {
@@ -142,14 +142,14 @@ public class MyFileUtils {
 
     public static boolean moveFileDir(String srcFilePath, String desFilePath) {
         if (!copyOrMoveFileDirCheck(srcFilePath, desFilePath)) {
-            MyLog.e(TAG, "moveFileDir -> 检测参数失败！");
+            MyLog.error(TAG, "moveFileDir -> 检测参数失败！");
             return false;
         }
 
         try {
             Files.move(Paths.get(srcFilePath), Paths.get(desFilePath), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            MyLog.e(TAG, "moveFileDir -> 移动文件夹执行失败！");
+            MyLog.error(TAG, "moveFileDir -> 移动文件夹执行失败！");
             e.printStackTrace();
             return false;
         }
@@ -158,14 +158,14 @@ public class MyFileUtils {
 
     public static boolean copyFileDir(String srcFilePath, String desFilePath) {
         if (!copyOrMoveFileDirCheck(srcFilePath, desFilePath)) {
-            MyLog.e(TAG, "copyFileDir -> 检测参数失败！");
+            MyLog.error(TAG, "copyFileDir -> 检测参数失败！");
             return false;
         }
 
         try {
             Files.copy(Paths.get(srcFilePath), Paths.get(desFilePath), StandardCopyOption.COPY_ATTRIBUTES);
         } catch (IOException e) {
-            MyLog.e(TAG, "copyFileDir -> 复制文件夹执行失败！");
+            MyLog.error(TAG, "copyFileDir -> 复制文件夹执行失败！");
             e.printStackTrace();
             return false;
         }
@@ -174,14 +174,14 @@ public class MyFileUtils {
 
     public static boolean moveFile(String srcFilePath, String desFilePath) {
         if (!copyOrMoveFileCheck(srcFilePath, desFilePath)) {
-            MyLog.e(TAG, "moveFile -> 检测参数失败！");
+            MyLog.error(TAG, "moveFile -> 检测参数失败！");
             return false;
         }
 
         try {
             Files.move(Paths.get(srcFilePath), Paths.get(desFilePath), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            MyLog.e(TAG, "moveFile -> 移动文件执行失败！");
+            MyLog.error(TAG, "moveFile -> 移动文件执行失败！");
             e.printStackTrace();
             return false;
         }
@@ -190,14 +190,14 @@ public class MyFileUtils {
 
     public static boolean copyFile(String srcFilePath, String desFilePath) {
         if (!copyOrMoveFileCheck(srcFilePath, desFilePath)) {
-            MyLog.e(TAG, "copyFile -> 检测参数失败！");
+            MyLog.error(TAG, "copyFile -> 检测参数失败！");
             return false;
         }
 
         try {
             Files.copy(Paths.get(srcFilePath), Paths.get(desFilePath), StandardCopyOption.COPY_ATTRIBUTES);
         } catch (IOException e) {
-            MyLog.e(TAG, "copyFile -> 复制文件执行失败！");
+            MyLog.error(TAG, "copyFile -> 复制文件执行失败！");
             e.printStackTrace();
             return false;
         }
@@ -207,12 +207,12 @@ public class MyFileUtils {
     private static boolean copyOrMoveFileCheck(String srcFilePath, String desFilePath) {
         File srcFile = checkFileExist(srcFilePath);
         if (srcFile == null) {
-            MyLog.e(TAG, "copyOrMoveFileCheck -> 检测源文件不存在，拷贝或移动文件执行失败！");
+            MyLog.error(TAG, "copyOrMoveFileCheck -> 检测源文件不存在，拷贝或移动文件执行失败！");
             return false;
         }
 
         if (!srcFile.isFile()) {
-            MyLog.e(TAG, "copyOrMoveFileCheck -> 源文件的类型不对，不是文件类型，拷贝或移动文件执行失败！");
+            MyLog.error(TAG, "copyOrMoveFileCheck -> 源文件的类型不对，不是文件类型，拷贝或移动文件执行失败！");
             return false;
         }
 
@@ -220,7 +220,7 @@ public class MyFileUtils {
         if (desFile.exists()) {
             boolean delete = desFile.delete();
             if (!delete) {
-                MyLog.e(TAG, "copyOrMoveFileCheck -> 删除老的目的文件失败，拷贝或移动文件执行失败！");
+                MyLog.error(TAG, "copyOrMoveFileCheck -> 删除老的目的文件失败，拷贝或移动文件执行失败！");
                 return false;
             }
         }
@@ -230,7 +230,7 @@ public class MyFileUtils {
         if (!parentDir.exists()) {
             boolean mkdirs = parentDir.mkdirs();
             if (!mkdirs) {
-                MyLog.e(TAG, "copyOrMoveFileCheck -> 创建目的多层文件夹失败！拷贝或移动文件执行失败！");
+                MyLog.error(TAG, "copyOrMoveFileCheck -> 创建目的多层文件夹失败！拷贝或移动文件执行失败！");
                 return false;
             }
         }
@@ -240,7 +240,7 @@ public class MyFileUtils {
     private static boolean copyOrMoveFileDirCheck(String srcFilePath, String desFilePath) {
         File srcFile = checkFileDirExist(srcFilePath);
         if (srcFile == null) {
-            MyLog.e(TAG, "copyOrMoveFileDirCheck -> 检测源文件夹不存在，拷贝或移动文件执行失败！");
+            MyLog.error(TAG, "copyOrMoveFileDirCheck -> 检测源文件夹不存在，拷贝或移动文件执行失败！");
             return false;
         }
 
@@ -248,14 +248,14 @@ public class MyFileUtils {
         if (desDir.exists()) {
             boolean delete = deleteFileDir(desDir);
             if (!delete) {
-                MyLog.e(TAG, "copyOrMoveFileDirCheck -> 删除老的目的文件夹失败，拷贝或移动文件执行失败！");
+                MyLog.error(TAG, "copyOrMoveFileDirCheck -> 删除老的目的文件夹失败，拷贝或移动文件执行失败！");
                 return false;
             }
         }
         return true;
     }
 
-    private static boolean deleteFileDir(File desDir) {
+    public static boolean deleteFileDir(File desDir) {
         if (desDir == null) {
             return false;
         }
@@ -270,7 +270,7 @@ public class MyFileUtils {
                 } else {
                     boolean delete = file.delete();
                     if (!delete) {
-                        MyLog.e(TAG, "deleteFileDir -> 删除文件夹中的文件失败！" + tarPath);
+                        MyLog.error(TAG, "deleteFileDir -> 删除文件夹中的文件失败！" + tarPath);
                         return false;
                     }
                 }
@@ -279,7 +279,7 @@ public class MyFileUtils {
 
         boolean delete = desDir.delete();
         if (!delete) {
-            MyLog.e(TAG, "deleteFileDir -> 删除文件夹失败！" + desDir.getAbsolutePath());
+            MyLog.error(TAG, "deleteFileDir -> 删除文件夹失败！" + desDir.getAbsolutePath());
             return false;
         }
         return true;

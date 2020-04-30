@@ -5,7 +5,11 @@ import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
 import com.azx.mybuildassistant.utils.CmdExecuteHelper;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
+import com.azx.mybuildassistant.utils.MyTextUtils;
+import com.azx.mybuildassistant.utils.MyZipUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +19,11 @@ import java.util.List;
 public class BuildStandSdkTask extends BuildBaseTaskImpl {
 
     private static final String AAR_SAVE_PATH = MACHINE_PATH + "/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit";
+    private static final String SDK_CACHE_PATH = MACHINE_PATH + "/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit/SDK_CACHE";
+
+    public static String SDK_CACHE_FILE;
+    public static String SDK_CACHE_VOICE_FILE;
+
     private static final String AAR_OUTPUT_PATH = WSTECHAPI_MODULE_PATH + "/build/outputs/aar" + AAR_SRC;
     private static final String TAG = "BuildStandSdkTask";
 
@@ -24,100 +33,227 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     private static final String AUDIO_EFFECT_MODULE_SO = "/libAudioEffect.so";
 
     private static final String GLOBAL_BRANCH_TAG = "int mBranch =";
-    private VersionSelect.VersionBean versionBean;
-    private VersionSelect buildStandSdkVersionSelect;
     private List<BaseModule> moduleList;
-
-    private static final int BRANCH_VERSION = VersionSelect.CUSTOM_YQ;
 
     @Override
     public int start() {
-        buildStandSdkVersionSelect = new VersionSelect();
-        versionBean = buildStandSdkVersionSelect.selectVersion(BRANCH_VERSION);
-        MyLog.d(TAG, "开始构建 SDK 开发包...");
         super.start();
-        System.out.println("目的 SDK 开发包的文件名称为 : " + targetAarFileName);
-        System.out.println("目的 SDK 开发包存放路径为 : " + desAarFile.getAbsolutePath());
+//        buildPublishSdk(new int[]{VersionSelect.STAND_FULL_V7_SDK, VersionSelect.STAND_VOICE_V7_SDK, VersionSelect.STAND_FULL_V8_SDK
+//                , VersionSelect.STAND_VOICE_V8_SDK});
+
+//        // 出异常情况恢复代码
+//        VersionSelect buildStandSdkVersionSelect = new VersionSelect();
+//        VersionSelect.VersionBean versionBean = buildStandSdkVersionSelect.selectVersion(VersionSelect.STAND_VOICE_V7_SDK);
+//        restoreStatus(versionBean);
+//        MyLog.d(TEMP_SAVE);
+        return 0;
+    }
+
+    public void start(int[] versions) {
+        buildPublishSdk(versions);
+
+        // 出异常情况恢复代码
+//        moduleList = new ArrayList<>();
+//        moduleList.add(new VideoModule());
+//        moduleList.add(new RtmpModule());
+//        moduleList.add(new IjkModule());
+//        moduleList.add(new FaceModule());
+//        VersionSelect buildStandSdkVersionSelect = new VersionSelect();
+//        VersionSelect.VersionBean versionBean = buildStandSdkVersionSelect.selectVersion(VersionSelect.STAND_VOICE_V7_SDK);
+//        restoreStatus(versionBean);
+//        MyLog.d(TEMP_SAVE);
+    }
+
+    private void buildPublishSdk(int[] versions) {
         moduleList = new ArrayList<>();
         moduleList.add(new VideoModule());
         moduleList.add(new RtmpModule());
         moduleList.add(new IjkModule());
         moduleList.add(new FaceModule());
-        System.out.println("添加所有模块完毕...");
+        MyLog.d(TAG, "添加所有模块完毕...");
 
-        boolean build = startBuild();
-        if (!build) {
-            MyLog.e(TAG, "startBuild -> Buile Task check failed!");
-            restoreStatus();
-            return 0;
+        for (int version : versions) {
+            VersionSelect buildStandSdkVersionSelect = new VersionSelect();
+            VersionSelect.VersionBean versionBean = buildStandSdkVersionSelect.selectVersion(version);
+            if (version == VersionSelect.STAND_VOICE_V7_SDK || version == VersionSelect.STAND_VOICE_V8_SDK) {
+                versionBean.voiceSdk = true;
+            }
+
+            String targetAarFileName = buildTargetAarName(versionBean);
+            if (MyTextUtils.isEmpty(targetAarFileName)) {
+                MyLog.error(this.getClass().getSimpleName(), "变量 targetAarFileName 构建失败！");
+                System.exit(0);
+            }
+
+            File desAarFile = checkDesFileDirAar(AAR_SAVE_PATH, targetAarFileName);
+            if (desAarFile == null) {
+                MyLog.error(this.getClass().getSimpleName(), "变量 desAarFile 构建失败！");
+                System.exit(0);
+            }
+
+            MyLog.d(TAG, "目的 SDK 开发包的文件名称为 : " + targetAarFileName);
+            MyLog.d(TAG, "目的 SDK 开发包存放路径为 : " + desAarFile.getAbsolutePath());
+            MyLog.d(TAG, "目的 SDK 开发包版本 : " + version);
+            boolean build = startBuild(buildStandSdkVersionSelect, versionBean);
+            if (!build) {
+                MyLog.error(TAG, "startBuild -> Buile Task check failed!");
+                restoreStatus(versionBean);
+                return;
+            }
+
+            String finallyFilePath = desAarFile.getAbsolutePath();
+            executeBuild(finallyFilePath, buildStandSdkVersionSelect, versionBean);
+            restoreStatus(versionBean);
         }
-        executeBuild();
-        restoreStatus();
-        System.out.println(TEMP_SAVE);
-        return 0;
     }
 
-    @Override
-    protected String buildTargetAarName() {
+    private void unZipFile(String finallyFilePath) {
+        new Thread(() -> {
+            MyLog.d(TAG, "finallyFilePath : " + finallyFilePath);
+            File file = new File(finallyFilePath);
+            int count = 5;
+            while (!file.exists()) {
+                if (count == 0) {
+                    break;
+                }
+
+                MyLog.d(TAG, "目标文件不存在，等待创建中... : " + finallyFilePath);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                count--;
+            }
+
+            if (!file.exists()) {
+                return;
+            }
+
+            String parent = file.getParent();
+            String desPath = parent + File.separator + "temp";
+            File desDir = new File(desPath);
+            MyLog.d(TAG, "desDir : " + desDir.getAbsolutePath());
+            if (desDir.exists()) {
+                boolean delete = MyFileUtils.deleteFileDir(desDir);
+                if (!delete) {
+                    return;
+                }
+            }
+
+            String desFile = desPath + File.separator + file.getName();
+            MyLog.d(TAG, "finallyFilePath : " + finallyFilePath);
+            MyLog.d(TAG, "desPath : " + desPath);
+            boolean b = MyFileUtils.copyFile(finallyFilePath, desFile);
+            if (!b) {
+                return;
+            }
+
+            File srcFile = new File(desFile);
+            File zipFile = new File(desPath, "temp.zip");
+            boolean renameTo = srcFile.renameTo(zipFile);
+            if (!renameTo) {
+                return;
+            }
+
+            try {
+                MyZipUtils.unZipFiles(zipFile.getAbsolutePath(), desPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            zipFile.delete();
+        }).start();
+    }
+
+    private String buildTargetAarName(VersionSelect.VersionBean bean) {
         String name;
         String sdk_version_number = MyFileUtils.getStrFromVariable(globalConfigFilePath, "SDK_VERSION_NUMBER");
         if (sdk_version_number == null) {
-            MyLog.e(TAG, "在GlobalConfig文件中，未找到变量 SDK_VERSION_NUMBER，请检查！");
+            MyLog.error(TAG, "在GlobalConfig文件中，未找到变量 SDK_VERSION_NUMBER，请检查！");
             return null;
         }
 
         String sdk_version_date = MyFileUtils.getStrFromVariable(globalConfigFilePath, "SDK_VERSION_DATE");
         if (sdk_version_date == null) {
-            MyLog.e(TAG, "在GlobalConfig文件中，未找到变量 SDK_VERSION_DATE，请检查！");
+            MyLog.error(TAG, "在GlobalConfig文件中，未找到变量 SDK_VERSION_DATE，请检查！");
             return null;
         }
 
         String date = sdk_version_date.replaceAll("\\(", "").replaceAll("\\)", "");
-        if (versionBean.voiceSdk) {
-            name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Voice_" + date + ".aar";
+        if (bean.voiceSdk) {
+            if (bean.v8Module) {
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Voice_V8_" + date + ".aar";
+            } else {
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Voice_" + date + ".aar";
+            }
         } else {
-            name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Full_" + date + ".aar";
+            if (bean.v8Module) {
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Full_V8_" + date + ".aar";
+            } else {
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Full_" + date + ".aar";
+            }
         }
         return name;
     }
 
-    @Override
-    protected String getAarSavePath() {
-        return AAR_SAVE_PATH;
+    private File checkDesFileDirAar(String saveAarPath, String targetAarFileName) {
+        if (MyTextUtils.isEmpty(saveAarPath)) {
+            MyLog.error(this.getClass().getSimpleName(), "checkDesFileDirAar -> 从 getAarSavePath 方法中获取保存路径失败！");
+            return null;
+        }
+
+        String des_file = saveAarPath + File.separator + targetAarFileName;
+        File file = new File(des_file);
+        if (file.exists()) {
+            boolean delete = file.delete();
+            if (!delete) {
+                MyLog.error(this.getClass().getSimpleName(), "checkDesFileDirAar -> 删除老的文件失败！");
+                return null;
+            }
+        }
+        return file;
     }
 
-    private boolean startBuild() {
+    private boolean startBuild(VersionSelect versionSelect, VersionSelect.VersionBean versionBean) {
         if (versionBean.voiceSdk) {
             versionBean.videoModule = false;
             versionBean.rtmpModule = false;
             versionBean.ijkModule = false;
         }
 
-        boolean commonFiles = handleCommonFile();
-        if (!commonFiles) {
-            MyLog.e(TAG, "startBuild -> handleCommonFile failed!");
-            return false;
-        } else {
-            System.out.println("成功备份所有要修改的文件...");
+        File tempSave = new File(TEMP_SAVE);
+        if (tempSave.exists()) {
+            boolean b = MyFileUtils.deleteFileDir(tempSave);
+            if (!b) {
+                return false;
+            }
         }
 
-        boolean v8Module = handleV8Module();
+        boolean commonFiles = handleCommonFile(versionSelect);
+        if (!commonFiles) {
+            MyLog.error(TAG, "startBuild -> handleCommonFile failed!");
+            return false;
+        } else {
+            MyLog.d(TAG, "成功备份所有要修改的文件...");
+        }
+
+        boolean v8Module = handleV8Module(versionBean);
         if (!v8Module) {
-            MyLog.e(TAG, "startBuild -> handleV8Module failed!");
+            MyLog.error(TAG, "startBuild -> handleV8Module failed!");
             return false;
         }
 
         for (BaseModule baseModule : moduleList) {
             boolean build = baseModule.changeCodeToBuild(versionBean);
             if (!build) {
-                MyLog.e(TAG, "startBuild -> changeCodeToBuild failed!");
+                MyLog.error(TAG, "startBuild -> changeCodeToBuild failed!");
                 return false;
             }
         }
 
-        boolean otherModule = handleOtherModule();
+        boolean otherModule = handleOtherModule(versionBean);
         if (!otherModule) {
-            MyLog.e(TAG, "startBuild -> handleOtherModule failed!");
+            MyLog.error(TAG, "startBuild -> handleOtherModule failed!");
             return false;
         }
 
@@ -131,71 +267,91 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         });
 
         if (!b5) {
-            MyLog.e(TAG, "startBuild -> 处理 wstechBuildGradlePath 文件代码失败!");
+            MyLog.error(TAG, "startBuild -> 处理 wstechBuildGradlePath 文件代码失败!");
             return false;
         }
         return true;
     }
 
-    private void executeBuild() {
+    private void executeBuild(String finallyFilePath, VersionSelect versionSelect, VersionSelect.VersionBean versionBean) {
         CmdExecuteHelper mCmdExecuteHelper = new CmdExecuteHelper();
         CmdBean[] cmd = new CmdBean[]{
-                new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/wstechapi", CMD_STOP_FLAG),
-                new CmdBean(GRADLE + " clean ", CMD_STOP_FLAG),
-                new CmdBean(GRADLE + " assembleRelease", CMD_STOP_FLAG),
-                new CmdBean("cp " + AAR_OUTPUT_PATH + " " + AAR_SAVE_PATH, CMD_STOP_FLAG),
-                new CmdBean("mv " + AAR_SAVE_PATH + AAR_SRC + " " + desAarFile, CMD_STOP_FLAG),
-                new CmdBean("open " + AAR_SAVE_PATH, CMD_STOP_FLAG),
+                new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/wstechapi"),
+                new CmdBean(GRADLE + " clean "),
+                new CmdBean(GRADLE + " assembleRelease"),
         };
-        mCmdExecuteHelper.executeCmdAdv(cmd);
+        int i = mCmdExecuteHelper.executeCmdAdv(cmd);
+        if (i != 0) {
+            return;
+        }
+
+        boolean b = MyFileUtils.moveFile(AAR_OUTPUT_PATH, finallyFilePath);
+        if (!b) {
+            MyLog.error(TAG, "executeBuild -> 移动并修改产出aar名称失败");
+        }
+
+        if (versionSelect.version == VersionSelect.STAND_FULL_V7_SDK || versionSelect.version == VersionSelect.STAND_VOICE_V7_SDK) {
+            File f = new File(finallyFilePath);
+            String targetFile = SDK_CACHE_PATH + File.separator + f.getName();
+            boolean move = MyFileUtils.copyFile(finallyFilePath, targetFile);
+            if (!move) {
+                throw new RuntimeException("executeBuild moveFile failed! finallyFilePath : " + finallyFilePath + " | targetFile : " + targetFile);
+            } else {
+                if (versionSelect.version == VersionSelect.STAND_FULL_V7_SDK) {
+                    SDK_CACHE_FILE = targetFile;
+                } else {
+                    SDK_CACHE_VOICE_FILE = targetFile;
+                }
+            }
+        }
     }
 
-    private boolean handleCommonFile() {
+    private boolean handleCommonFile(VersionSelect buildStandSdkVersionSelect) {
         boolean b = MyFileUtils.copyFile(tttRtcEngineFilePath, TEMP_SAVE + tttRtcEngineFileName);
         if (!b) {
-            MyLog.e(TAG, "startBuild -> copyFile tttRtcEngineFileName failed!");
+            MyLog.error(TAG, "startBuild -> copyFile tttRtcEngineFileName failed!");
             return false;
         }
         boolean b1 = MyFileUtils.copyFile(tttRtcEngineImplFilePath, TEMP_SAVE + tttRtcEngineImplFileName);
         if (!b1) {
-            MyLog.e(TAG, "startBuild -> copyFile tttRtcEngineImplFileName failed!");
+            MyLog.error(TAG, "startBuild -> copyFile tttRtcEngineImplFileName failed!");
             return false;
         }
         boolean b2 = MyFileUtils.copyFile(wstechBuildGradlePath, TEMP_SAVE + wstechBuildGradleName);
         if (!b2) {
-            MyLog.e(TAG, "startBuild -> copyFile wstechBuildGradleName failed!");
+            MyLog.error(TAG, "startBuild -> copyFile wstechBuildGradleName failed!");
             return false;
         }
         boolean b3 = MyFileUtils.copyFile(globalConfigFilePath, TEMP_SAVE + globalConfigFileName);
         if (!b3) {
-            MyLog.e(TAG, "startBuild -> copyFile globalConfigFileName failed!");
+            MyLog.error(TAG, "startBuild -> copyFile globalConfigFileName failed!");
             return false;
         }
         boolean b4 = MyFileUtils.copyFile(unityFilePath, TEMP_SAVE + unityFileName);
         if (!b4) {
-            MyLog.e(TAG, "startBuild -> copyFile unityFileName failed!");
+            MyLog.error(TAG, "startBuild -> copyFile unityFileName failed!");
             return false;
         }
         boolean b6 = buildStandSdkVersionSelect.changeBranchTag(globalConfigFilePath, GLOBAL_BRANCH_TAG);
         if (!b6) {
-            MyLog.e(TAG, "startBuild -> changeBranchTag failed!");
+            MyLog.error(TAG, "startBuild -> changeBranchTag failed!");
             return false;
         }
         return true;
     }
 
-    private boolean handleV8Module() {
+    private boolean handleV8Module(VersionSelect.VersionBean versionBean) {
         if (!versionBean.v8Module) {
             return MyFileUtils.moveFileDir(LIB_ARM64_V8_PATH, TEMP_SAVE + LIB_ARM64_V8);
         }
         return true;
     }
 
-    private boolean handleOtherModule() {
+    private boolean handleOtherModule(VersionSelect.VersionBean versionBean) {
         if (!versionBean.unityModule) {
             boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + UNITY_MODULE_SO, TEMP_SAVE + LIB_ARMEABI_V7 + UNITY_MODULE_SO);
             if (!b) {
-                MyLog.e(TAG, "handleOtherModule -> 移动 UNITY_MODULE_SO 文件失败！");
+                MyLog.error(TAG, "handleOtherModule -> 移动 UNITY_MODULE_SO 文件失败！");
                 return false;
             }
         }
@@ -203,13 +359,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         if (!versionBean.audioEffect) {
             boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + AUDIO_EFFECT_MODULE_SO, TEMP_SAVE + LIB_ARMEABI_V7 + AUDIO_EFFECT_MODULE_SO);
             if (!b) {
-                MyLog.e(TAG, "handleOtherModule -> 移动 AUDIO_EFFECT_MODULE_SO 文件失败！");
+                MyLog.error(TAG, "handleOtherModule -> 移动 AUDIO_EFFECT_MODULE_SO 文件失败！");
                 return false;
             }
             if (versionBean.v8Module) {
                 boolean b1 = MyFileUtils.moveFile(LIB_ARM64_V8_PATH + AUDIO_EFFECT_MODULE_SO, TEMP_SAVE + LIB_ARM64_V8 + AUDIO_EFFECT_MODULE_SO);
                 if (!b1) {
-                    MyLog.e(TAG, "handleOtherModule -> 移动 V8 AUDIO_EFFECT_MODULE_SO 文件失败！");
+                    MyLog.error(TAG, "handleOtherModule -> 移动 V8 AUDIO_EFFECT_MODULE_SO 文件失败！");
                     return false;
                 }
             }
@@ -217,7 +373,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         return true;
     }
 
-    private void restoreStatus() {
+    private void restoreStatus(VersionSelect.VersionBean versionBean) {
         if (!versionBean.unityModule) {
             MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + UNITY_MODULE_SO, LIB_ARMEABI_V7_PATH + UNITY_MODULE_SO);
         }
@@ -236,7 +392,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         for (BaseModule baseModule : moduleList) {
             boolean build = baseModule.restoreCode(versionBean);
             if (!build) {
-                MyLog.e(TAG, "restoreStatus -> restoreCode failed!");
+                MyLog.error(TAG, "restoreStatus -> restoreCode failed! " + baseModule);
             }
         }
 

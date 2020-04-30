@@ -28,25 +28,25 @@ class FaceModule extends BaseModule {
     boolean changeCodeToBuild(VersionSelect.VersionBean bean) {
         boolean b = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + FACE_MODULE_AAR, TEMP_SAVE + FACE_MODULE_AAR);
         if (!b) {
-            MyLog.e(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_AAR 文件失败！");
+            MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_AAR 文件失败！");
             return false;
         }
 
         boolean b1 = MyFileUtils.moveFileDir(MYVIDEO_ASSETS_PATH, TEMP_SAVE + MYVIDEO_ASSETS_NAME);
         if (!b1) {
-            MyLog.e(TAG, "changeCodeToBuild -> 移动 MYVIDEO_ASSETS_NAME 文件夹失败！");
+            MyLog.error(TAG, "changeCodeToBuild -> 移动 MYVIDEO_ASSETS_NAME 文件夹失败！");
             return false;
         }
 
         boolean b3 = MyFileUtils.moveFile(FACE_MODULE_JAVA_FILE_PATH, TEMP_SAVE + FACE_MODULE_JAVA_FILE_NAME);
         if (!b3) {
-            MyLog.e(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_JAVA_FILE_NAME 文件失败！");
+            MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_JAVA_FILE_NAME 文件失败！");
             return false;
         }
 
         boolean b4 = MyFileUtils.copyFile(MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH, TEMP_SAVE + MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME);
         if (!b4) {
-            MyLog.e(TAG, "changeCodeToBuild -> 移动 MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME 文件失败！");
+            MyLog.error(TAG, "changeCodeToBuild -> 移动 MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME 文件失败！");
             return false;
         }
 
@@ -62,7 +62,7 @@ class FaceModule extends BaseModule {
         });
 
         if (!b2) {
-            MyLog.e(TAG, "changeCodeToBuild -> 处理 MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH 文件代码失败！");
+            MyLog.error(TAG, "changeCodeToBuild -> 处理 MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH 文件代码失败！");
             return false;
         }
 
@@ -78,7 +78,7 @@ class FaceModule extends BaseModule {
         });
 
         if (!b5) {
-            MyLog.e(TAG, "changeCodeToBuild -> 处理 tttRtcEngineImplFilePath 文件代码失败！");
+            MyLog.error(TAG, "changeCodeToBuild -> 处理 tttRtcEngineImplFilePath 文件代码失败！");
             return false;
         }
         return true;
@@ -90,6 +90,6 @@ class FaceModule extends BaseModule {
         MyFileUtils.moveFileDir(TEMP_SAVE + MYVIDEO_ASSETS_NAME, MYVIDEO_ASSETS_PATH);
         MyFileUtils.moveFile(TEMP_SAVE + FACE_MODULE_JAVA_FILE_NAME, FACE_MODULE_JAVA_FILE_PATH);
         MyFileUtils.moveFile(TEMP_SAVE + MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME, MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH);
-        return false;
+        return true;
     }
 }

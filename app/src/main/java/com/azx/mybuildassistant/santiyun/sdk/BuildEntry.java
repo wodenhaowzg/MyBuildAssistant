@@ -6,11 +6,11 @@ public class BuildEntry extends BaseTask {
 
     @Override
     public int start() {
-//        BuildStandSdkTask task = new BuildStandSdkTask();
-//        task.start();
-
-        BuildQuanMinSDK task = new BuildQuanMinSDK();
+        BuildStandSdkTask task = new BuildStandSdkTask();
         task.start();
+
+//        BuildQuanMinSDK task = new BuildQuanMinSDK();
+//        task.start();
         return 0;
     }
 }

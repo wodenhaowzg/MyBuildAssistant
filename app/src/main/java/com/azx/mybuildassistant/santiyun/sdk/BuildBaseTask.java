@@ -51,8 +51,6 @@ public abstract class BuildBaseTask extends SanTiYunBaseTask {
     final String wstech_embed_ijk_exo = "embed (name:'ijkplayer_exo'";
 
     Branch branch = Branch.STAND;
-    String targetAarFileName;
-    File desAarFile;
     SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd");
 
     @Override

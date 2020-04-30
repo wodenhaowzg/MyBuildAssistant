@@ -12,21 +12,24 @@ class VideoModule extends BaseModule {
     private static final String VIDEO_MODULE_YUV_SO = "/libyuv_ttt.so";
     private static final String VIDEO_MODULE_JAVA_FILE = "/TTTVideoModule.java";
     private static final String VIDEO_MODULE_JAVA_FILE_PATH = WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/internal" + VIDEO_MODULE_JAVA_FILE;
-    private static final String VIDEO_MODULE_FLAG_ONE = "IJK_handleSoLibTG";
-    private static final String VIDEO_MODULE_FLAG_TWO = "IJK_handleSoLibTGEvent";
+    private static final String VIDEO_MODULE_FLAG_ONE = "VideoFlag_handleVideoModule_config";
+    private static final String VIDEO_MODULE_FLAG_TWO = "VideoFlag_handleVideoModule_event";
+
+    private static final String VIDEO_MODULE_FLAG_THREE = "handleVideoModule_CreateRendererView";
+    private static final String VIDEO_MODULE_FUNC_FLAG_THREE = "SurfaceView CreateRendererView(";
 
     @Override
     boolean changeCodeToBuild(VersionSelect.VersionBean versionBean) {
         if (!versionBean.videoModule) {
             boolean b = handleSoLib(versionBean);
             if (!b) {
-                MyLog.e(TAG, "handleSoLib -> 处理代码失败！");
+                MyLog.error(TAG, "handleSoLib -> 处理代码失败！");
                 return false;
             }
 
             boolean b3 = handleJavaCode();
             if (!b3) {
-                MyLog.e(TAG, "handleJavaCode -> 处理代码失败！");
+                MyLog.error(TAG, "handleJavaCode -> 处理代码失败！");
                 return false;
             }
         }
@@ -36,36 +39,65 @@ class VideoModule extends BaseModule {
     private boolean handleSoLib(VersionSelect.VersionBean versionBean) {
         boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + VIDEO_MODULE_CODEC_SO, TEMP_SAVE + LIB_ARMEABI_V7 + VIDEO_MODULE_CODEC_SO);
         if (!b) {
-            MyLog.e(TAG, "handleSoLib -> 移动 VIDEO_MODULE_CODEC_SO 文件失败！");
+            MyLog.error(TAG, "handleSoLib -> 移动 VIDEO_MODULE_CODEC_SO 文件失败！");
             return false;
         }
 
         boolean b1 = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + VIDEO_MODULE_YUV_SO, TEMP_SAVE + LIB_ARMEABI_V7 + VIDEO_MODULE_YUV_SO);
         if (!b1) {
-            MyLog.e(TAG, "handleSoLib -> 移动 VIDEO_MODULE_YUV_SO 文件失败！");
+            MyLog.error(TAG, "handleSoLib -> 移动 VIDEO_MODULE_YUV_SO 文件失败！");
             return false;
         }
         if (versionBean.v8Module) {
             boolean b2 = MyFileUtils.moveFile(LIB_ARM64_V8_PATH + VIDEO_MODULE_CODEC_SO, TEMP_SAVE + LIB_ARM64_V8 + VIDEO_MODULE_CODEC_SO);
             if (!b2) {
-                MyLog.e(TAG, "handleSoLib -> 移动 V8 VIDEO_MODULE_CODEC_SO 文件失败！");
+                MyLog.error(TAG, "handleSoLib -> 移动 V8 VIDEO_MODULE_CODEC_SO 文件失败！");
                 return false;
             }
             boolean b3 = MyFileUtils.moveFile(LIB_ARM64_V8_PATH + VIDEO_MODULE_YUV_SO, TEMP_SAVE + LIB_ARM64_V8 + VIDEO_MODULE_YUV_SO);
             if (!b3) {
-                MyLog.e(TAG, "handleSoLib -> 移动 V8 VIDEO_MODULE_YUV_SO 文件失败！");
+                MyLog.error(TAG, "handleSoLib -> 移动 V8 VIDEO_MODULE_YUV_SO 文件失败！");
                 return false;
             }
         }
         boolean b2 = MyFileUtils.moveFile(VIDEO_MODULE_JAVA_FILE_PATH, TEMP_SAVE + VIDEO_MODULE_JAVA_FILE);
         if (!b2) {
-            MyLog.e(TAG, "handleSoLib -> 移动 VIDEO_MODULE_JAVA_FILE 文件失败！");
+            MyLog.error(TAG, "handleSoLib -> 移动 VIDEO_MODULE_JAVA_FILE 文件失败！");
             return false;
         }
         return true;
     }
 
     private boolean handleJavaCode() {
+        boolean b3 = MyFileUtils.modifyFileContent(tttRtcEngineFilePath, new MyFileUtils.FileContentListener() {
+
+            private boolean addContent;
+            private boolean startReplace;
+
+            @Override
+            public String lineTextContent(String line) {
+                if (line.contains(VIDEO_MODULE_FUNC_FLAG_THREE)) {
+                    startReplace = true;
+                } else if (line.contains(VIDEO_MODULE_FLAG_THREE)) {
+                    startReplace = false;
+                } else {
+                    if (startReplace) {
+                        if (!addContent) {
+                            addContent = true;
+                            return "return null;";
+                        } else {
+                            return "";
+                        }
+                    }
+                }
+                return line;
+            }
+        });
+        if (!b3) {
+            MyLog.error(TAG, "handleJavaCode -> 处理 tttRtcEngineFilePath 文件代码失败！");
+            return false;
+        }
+
         boolean b = MyFileUtils.modifyFileContent(tttRtcEngineImplFilePath, new MyFileUtils.FileContentListener() {
 
             @Override
@@ -73,11 +105,13 @@ class VideoModule extends BaseModule {
                 if (line.contains(VIDEO_MODULE_FLAG_ONE) || line.contains(VIDEO_MODULE_FLAG_TWO)) {
                     return "return null;";
                 }
+
+
                 return line;
             }
         });
         if (!b) {
-            MyLog.e(TAG, "handleJavaCode -> 处理 tttRtcEngineImplFilePath 文件代码失败！");
+            MyLog.error(TAG, "handleJavaCode -> 处理 tttRtcEngineImplFilePath 文件代码失败！");
             return false;
         }
 
@@ -94,7 +128,7 @@ class VideoModule extends BaseModule {
             }
         });
         if (!b1) {
-            MyLog.e(TAG, "handleJavaCode -> 处理 globalConfigFilePath 文件代码失败！");
+            MyLog.error(TAG, "handleJavaCode -> 处理 globalConfigFilePath 文件代码失败！");
             return false;
         }
 
@@ -109,7 +143,7 @@ class VideoModule extends BaseModule {
             }
         });
         if (!b2) {
-            MyLog.e(TAG, "handleJavaCode -> 处理 unityFilePath 文件代码失败！");
+            MyLog.error(TAG, "handleJavaCode -> 处理 unityFilePath 文件代码失败！");
             return false;
         }
         return true;

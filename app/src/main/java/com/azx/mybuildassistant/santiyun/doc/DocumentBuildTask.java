@@ -148,13 +148,13 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
 
             String funName = getFunName(mFunCommentCodeBlock.funFullName);
             if (funName == null) {
-                MyLog.e(TAG, "Get fun name failed! " + mFunCommentCodeBlock.funFullName);
+                MyLog.error(TAG, "Get fun name failed! " + mFunCommentCodeBlock.funFullName);
                 return null;
             }
 
             String chineseName = getChineseName(mFunCommentCodeBlock.funComment);
             if (chineseName == null) {
-                MyLog.e(TAG, "Get chinese name failed! " + mFunCommentCodeBlock.funFullName);
+                MyLog.error(TAG, "Get chinese name failed! " + mFunCommentCodeBlock.funFullName);
                 return null;
             }
 

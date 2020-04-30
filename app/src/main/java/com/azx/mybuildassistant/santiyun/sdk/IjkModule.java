@@ -27,13 +27,13 @@ class IjkModule extends BaseModule {
         if (!versionBean.ijkModule) {
             boolean b = handleSoLib(versionBean);
             if (!b) {
-                MyLog.e(TAG, "handleSoLib -> 处理代码失败！");
+                MyLog.error(TAG, "handleSoLib -> 处理代码失败！");
                 return false;
             }
 
             boolean b3 = handleIjkCode();
             if (!b3) {
-                MyLog.e(TAG, "handleIjkModule -> 处理代码失败！");
+                MyLog.error(TAG, "handleIjkModule -> 处理代码失败！");
                 return false;
             }
         }
@@ -43,49 +43,49 @@ class IjkModule extends BaseModule {
     private boolean handleSoLib(VersionSelect.VersionBean versionBean) {
         boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + IJK_MODULE_FFMPEG_SO, TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_FFMPEG_SO);
         if (!b) {
-            MyLog.e(TAG, "handleIjkModule -> 移动 IJK_MODULE_FFMPEG_SO 文件失败！");
+            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_FFMPEG_SO 文件失败！");
             return false;
         }
         boolean b1 = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + IJK_MODULE_PLAYER_SO, TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_PLAYER_SO);
         if (!b1) {
-            MyLog.e(TAG, "handleIjkModule -> 移动 IJK_MODULE_PLAYER_SO 文件失败！");
+            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_PLAYER_SO 文件失败！");
             return false;
         }
         boolean b2 = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + IJK_MODULE_SDL_SO, TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_SDL_SO);
         if (!b2) {
-            MyLog.e(TAG, "handleIjkModule -> 移动 IJK_MODULE_SDL_SO 文件失败！");
+            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_SDL_SO 文件失败！");
             return false;
         }
         if (versionBean.v8Module) {
             boolean b3 = MyFileUtils.moveFile(LIB_ARM64_V8_PATH + IJK_MODULE_FFMPEG_SO, TEMP_SAVE + LIB_ARM64_V8 + IJK_MODULE_FFMPEG_SO);
             if (!b3) {
-                MyLog.e(TAG, "handleIjkModule -> 移动 V8 IJK_MODULE_FFMPEG_SO 文件失败！");
+                MyLog.error(TAG, "handleIjkModule -> 移动 V8 IJK_MODULE_FFMPEG_SO 文件失败！");
                 return false;
             }
             boolean b4 = MyFileUtils.moveFile(LIB_ARM64_V8_PATH + IJK_MODULE_PLAYER_SO, TEMP_SAVE + LIB_ARM64_V8 + IJK_MODULE_PLAYER_SO);
             if (!b4) {
-                MyLog.e(TAG, "handleIjkModule -> 移动 V8 IJK_MODULE_PLAYER_SO 文件失败！");
+                MyLog.error(TAG, "handleIjkModule -> 移动 V8 IJK_MODULE_PLAYER_SO 文件失败！");
                 return false;
             }
             boolean b5 = MyFileUtils.moveFile(LIB_ARM64_V8_PATH + IJK_MODULE_SDL_SO, TEMP_SAVE + LIB_ARM64_V8 + IJK_MODULE_SDL_SO);
             if (!b5) {
-                MyLog.e(TAG, "handleIjkModule -> 移动 V8 IJK_MODULE_SDL_SO 文件失败！");
+                MyLog.error(TAG, "handleIjkModule -> 移动 V8 IJK_MODULE_SDL_SO 文件失败！");
                 return false;
             }
         }
         boolean b6 = MyFileUtils.moveFile(LIB + IJK_MODULE_JAVA_AAR, TEMP_SAVE + IJK_MODULE_JAVA_AAR);
         if (!b6) {
-            MyLog.e(TAG, "handleIjkModule -> 移动 IJK_MODULE_JAVA_AAR 文件失败！");
+            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_JAVA_AAR 文件失败！");
             return false;
         }
         boolean b7 = MyFileUtils.moveFile(LIB + IJK_MODULE_EXO_AAR, TEMP_SAVE + IJK_MODULE_EXO_AAR);
         if (!b7) {
-            MyLog.e(TAG, "handleIjkModule -> 移动 IJK_MODULE_EXO_AAR 文件失败！");
+            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_EXO_AAR 文件失败！");
             return false;
         }
         boolean b8 = MyFileUtils.moveFile(IJK_MODULE_JAVA_FILE_PATH, TEMP_SAVE + IJK_MODULE_JAVA_FILE);
         if (!b8) {
-            MyLog.e(TAG, "handleIjkModule -> 移动 IJK_MODULE_JAVA_FILE 文件失败！");
+            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_JAVA_FILE 文件失败！");
             return false;
         }
         return true;
@@ -121,7 +121,7 @@ class IjkModule extends BaseModule {
             }
         });
         if (!b) {
-            MyLog.e(TAG, "handleIjkCode -> 处理 tttRtcEngineImplFilePath 文件代码失败！");
+            MyLog.error(TAG, "handleIjkCode -> 处理 tttRtcEngineImplFilePath 文件代码失败！");
             return false;
         }
 
@@ -140,7 +140,7 @@ class IjkModule extends BaseModule {
             }
         });
         if (!b1) {
-            MyLog.e(TAG, "handleIjkCode -> 处理 tttRtcEngineFilePath 文件代码失败！");
+            MyLog.error(TAG, "handleIjkCode -> 处理 tttRtcEngineFilePath 文件代码失败！");
             return false;
         }
 
@@ -156,7 +156,7 @@ class IjkModule extends BaseModule {
             }
         });
         if (!b2) {
-            MyLog.e(TAG, "handleIjkCode -> 处理 wstechBuildGradlePath 文件代码失败！");
+            MyLog.error(TAG, "handleIjkCode -> 处理 wstechBuildGradlePath 文件代码失败！");
             return false;
         }
         return true;

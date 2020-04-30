@@ -9,4 +9,8 @@ public class CmdBean {
         this.cmd = cmd;
         this.stopFlag = stopFlag;
     }
+
+    public CmdBean(String cmd) {
+        this.cmd = cmd;
+    }
 }

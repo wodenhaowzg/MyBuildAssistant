@@ -14,9 +14,12 @@ public class VersionSelect {
 
     public static final int NORMAL_FULL_V7_SDK = 50;
 
-    public static final int XIAOYUN_SDK = 100;
-
-    public static final int CUSTOM_YQ = 200;
+    public static final int XIAOYUN_SDK = 100; // 淆云
+    public static final int CUSTOM_YQ = 200; // 椰趣
+    public static final int CUSTOM_TC = 201; // 同创
+    public static final int CUSTOM_TY = 202; // 太岳
+    public static final int CUSTOM_LY = 203; // 龙羽
+    public static final int CUSTOM_HZ = 204; // 好赞
 
     public int version;
 
@@ -47,9 +50,18 @@ public class VersionSelect {
             case NORMAL_FULL_V7_SDK:
             case XIAOYUN_SDK:
             case CUSTOM_YQ:
+            case CUSTOM_TC:
                 bean.videoModule = true;
                 bean.rtmpModule = true;
                 bean.ijkModule = true;
+                break;
+            case CUSTOM_TY:
+            case CUSTOM_HZ:
+                bean.videoModule = true;
+                bean.rtmpModule = true;
+                break;
+            case CUSTOM_LY:
+                bean.voiceSdk = true;
                 break;
         }
         return bean;
@@ -63,6 +75,16 @@ public class VersionSelect {
                 if (line.contains(branchTag)) {
                     if (version == CUSTOM_YQ) {
                         return "public static int mBranch = LocalSDKConstants.BRANCH_CLIENT_YQ;";
+                    } else if (version == CUSTOM_TC) {
+                        return "public static int mBranch = LocalSDKConstants.BRANCH_CLIENT_TC;";
+                    } else if (version == CUSTOM_TY) {
+                        return "public static int mBranch = LocalSDKConstants.BRANCH_CLIENT_TY;";
+                    } else if (version == CUSTOM_LY) {
+                        return "public static int mBranch = LocalSDKConstants.BRANCH_CLIENT_LY;";
+                    } else if (version == CUSTOM_HZ) {
+                        return "public static int mBranch = LocalSDKConstants.BRANCH_CLIENT_HZ;";
+                    } else if (version == XIAOYUN_SDK) {
+                        return "public static int mBranch = LocalSDKConstants.BRANCH_CLIENT_XIAOYUN;";
                     }
                 }
                 return line;
@@ -70,7 +92,7 @@ public class VersionSelect {
         });
 
         if (!b6) {
-            MyLog.e(TAG, "changeBranchTag -> 处理 globalConfigFilePath 文件代码失败!");
+            MyLog.error(TAG, "changeBranchTag -> 处理 globalConfigFilePath 文件代码失败!");
             return false;
         }
         return true;

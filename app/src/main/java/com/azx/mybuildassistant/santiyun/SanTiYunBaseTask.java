@@ -4,8 +4,6 @@ import java.io.File;
 
 public abstract class SanTiYunBaseTask extends BaseTask {
 
-    protected static final String CMD_STOP_FLAG = "FINISH";
-
     // 三体云代码仓库路径
     protected static final String SANTIYUN_PATH = MACHINE_PATH + File.separator + "Downloads" + File.separator +
             "Learns" + File.separator +

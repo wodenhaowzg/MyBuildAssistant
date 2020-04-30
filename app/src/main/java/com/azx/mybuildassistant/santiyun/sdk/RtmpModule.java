@@ -11,27 +11,27 @@ class RtmpModule extends BaseModule {
     private static final String RTMP_MODULE_SO = "/librtmp.so";
     private static final String RTMP_MODULE_JAVA_FILE = "/TTTRtmpModule.java";
     private static final String RTMP_MODULE_JAVA_FILE_PATH = WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/internal" + RTMP_MODULE_JAVA_FILE;
-    private static final String RTMP_MODULE_FLAG_ONE = "RTMP_MODULE_changeCodeToBuild";
-    private static final String RTMP_MODULE_FUNC_FLAG = "Object changeCodeToBuild(";
+    private static final String RTMP_MODULE_FLAG_ONE = "RtmpFlag_handleRTMPModule";
+    private static final String RTMP_MODULE_FUNC_FLAG_ONE = "Object handleRTMPModule(";
 
     @Override
     boolean changeCodeToBuild(VersionSelect.VersionBean versionBean) {
         if (!versionBean.rtmpModule) {
             boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + RTMP_MODULE_SO, TEMP_SAVE + LIB_ARMEABI_V7 + RTMP_MODULE_SO);
             if (!b) {
-                MyLog.e(TAG, "changeCodeToBuild -> 移动 RTMP_MODULE_SO 文件失败！");
+                MyLog.error(TAG, "changeCodeToBuild -> 移动 RTMP_MODULE_SO 文件失败！");
                 return false;
             }
             if (versionBean.v8Module) {
                 boolean b1 = MyFileUtils.moveFile(LIB_ARM64_V8_PATH + RTMP_MODULE_SO, TEMP_SAVE + LIB_ARM64_V8 + RTMP_MODULE_SO);
                 if (!b1) {
-                    MyLog.e(TAG, "changeCodeToBuild -> 移动 V8 RTMP_MODULE_SO 文件失败！");
+                    MyLog.error(TAG, "changeCodeToBuild -> 移动 V8 RTMP_MODULE_SO 文件失败！");
                     return false;
                 }
             }
             boolean b2 = MyFileUtils.moveFile(RTMP_MODULE_JAVA_FILE_PATH, TEMP_SAVE + RTMP_MODULE_JAVA_FILE);
             if (!b2) {
-                MyLog.e(TAG, "changeCodeToBuild -> 移动 RTMP_MODULE_JAVA_FILE 文件失败！");
+                MyLog.error(TAG, "changeCodeToBuild -> 移动 RTMP_MODULE_JAVA_FILE 文件失败！");
                 return false;
             }
 
@@ -42,7 +42,7 @@ class RtmpModule extends BaseModule {
 
                 @Override
                 public String lineTextContent(String line) {
-                    if (line.contains(RTMP_MODULE_FUNC_FLAG)) {
+                    if (line.contains(RTMP_MODULE_FUNC_FLAG_ONE)) {
                         startReplace = true;
                     } else if (line.contains(RTMP_MODULE_FLAG_ONE)) {
                         startReplace = false;
@@ -60,7 +60,7 @@ class RtmpModule extends BaseModule {
                 }
             });
             if (!b3) {
-                MyLog.e(TAG, "changeCodeToBuild -> 处理代码失败！");
+                MyLog.error(TAG, "changeCodeToBuild -> 处理代码失败！");
                 return false;
             }
         }
