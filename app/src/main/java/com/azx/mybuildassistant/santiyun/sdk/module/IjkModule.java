@@ -1,10 +1,10 @@
-package com.azx.mybuildassistant.santiyun.sdk;
+package com.azx.mybuildassistant.santiyun.sdk.module;
 
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
 
-class IjkModule extends BaseModule {
+public class IjkModule extends BaseModule {
 
     private static final String TAG = IjkModule.class.getSimpleName();
 
@@ -23,7 +23,7 @@ class IjkModule extends BaseModule {
     private static final String IJK_FUNCTION_CREATE_IJK_RENDERER_VIEW = "IjkVideoView CreateIjkRendererView(";
 
     @Override
-    boolean changeCodeToBuild(VersionSelect.VersionBean versionBean) {
+    public boolean changeCodeToBuild(VersionSelect.VersionBean versionBean) {
         if (!versionBean.ijkModule) {
             boolean b = handleSoLib(versionBean);
             if (!b) {
@@ -163,7 +163,7 @@ class IjkModule extends BaseModule {
     }
 
     @Override
-    boolean restoreCode(VersionSelect.VersionBean versionBean) {
+    public boolean restoreCode(VersionSelect.VersionBean versionBean) {
         if (!versionBean.ijkModule) {
             MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_FFMPEG_SO, LIB_ARMEABI_V7_PATH + IJK_MODULE_FFMPEG_SO);
             MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_PLAYER_SO, LIB_ARMEABI_V7_PATH + IJK_MODULE_PLAYER_SO);

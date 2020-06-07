@@ -1,7 +1,13 @@
 package com.azx.mybuildassistant.santiyun.sdk;
 
 import com.azx.mybuildassistant.bean.CmdBean;
+import com.azx.mybuildassistant.santiyun.sdk.helper.VersionNumberChange;
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
+import com.azx.mybuildassistant.santiyun.sdk.module.BaseModule;
+import com.azx.mybuildassistant.santiyun.sdk.module.FaceModule;
+import com.azx.mybuildassistant.santiyun.sdk.module.IjkModule;
+import com.azx.mybuildassistant.santiyun.sdk.module.RtmpModule;
+import com.azx.mybuildassistant.santiyun.sdk.module.VideoModule;
 import com.azx.mybuildassistant.utils.CmdExecuteHelper;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
@@ -38,30 +44,44 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     @Override
     public int start() {
         super.start();
-//        buildPublishSdk(new int[]{VersionSelect.STAND_FULL_V7_SDK, VersionSelect.STAND_VOICE_V7_SDK, VersionSelect.STAND_FULL_V8_SDK
-//                , VersionSelect.STAND_VOICE_V8_SDK});
-
-//        // 出异常情况恢复代码
 //        VersionSelect buildStandSdkVersionSelect = new VersionSelect();
-//        VersionSelect.VersionBean versionBean = buildStandSdkVersionSelect.selectVersion(VersionSelect.STAND_VOICE_V7_SDK);
-//        restoreStatus(versionBean);
-//        MyLog.d(TEMP_SAVE);
+//        buildStandSdkVersionSelect.selectVersion(VersionSelect.XIAOYUN_SDK);
+//        boolean b6 = buildStandSdkVersionSelect.changeBranchTag(globalConfigFilePath, GLOBAL_BRANCH_TAG);
+//        if (!b6) {
+//            MyLog.error(TAG, "startBuild -> changeBranchTag failed!");
+//        }
+
+        buildPublishSdk(new int[]{VersionSelect.STAND_FULL_V7_SDK});
+//        executeTestApk("3T_Native_SDK_for_Android_V2.9.6_Full_2020_05_15.aar");
+
+//         出异常情况恢复代码
+//        restoreForFailed();
         return 0;
     }
 
+    // 每次发布标准SDK的时候，调用此方法进行多个版本的打包，版本号自+1
     public void start(int[] versions) {
+        // 版本号+1
+        VersionNumberChange versionNumberChange = new VersionNumberChange();
+        boolean changeResult = versionNumberChange.changeVersionNumber();
+        if (!changeResult) {
+            MyLog.d(TAG, "版本修改失败！");
+            return;
+        }
+        // 开始打包
         buildPublishSdk(versions);
+    }
 
-        // 出异常情况恢复代码
-//        moduleList = new ArrayList<>();
-//        moduleList.add(new VideoModule());
-//        moduleList.add(new RtmpModule());
-//        moduleList.add(new IjkModule());
-//        moduleList.add(new FaceModule());
-//        VersionSelect buildStandSdkVersionSelect = new VersionSelect();
-//        VersionSelect.VersionBean versionBean = buildStandSdkVersionSelect.selectVersion(VersionSelect.STAND_VOICE_V7_SDK);
-//        restoreStatus(versionBean);
-//        MyLog.d(TEMP_SAVE);
+    public void restoreForFailed() {
+        // 打包失败时，调用下面的代码，恢复被修改的文件内容
+        moduleList = new ArrayList<>();
+        moduleList.add(new VideoModule());
+        moduleList.add(new RtmpModule());
+        moduleList.add(new IjkModule());
+        moduleList.add(new FaceModule());
+        VersionSelect buildStandSdkVersionSelect = new VersionSelect();
+        VersionSelect.VersionBean versionBean = buildStandSdkVersionSelect.selectVersion(VersionSelect.STAND_VOICE_V7_SDK);
+        restoreStatus(versionBean);
     }
 
     private void buildPublishSdk(int[] versions) {
@@ -401,6 +421,70 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         MyFileUtils.moveFile(TEMP_SAVE + wstechBuildGradleName, wstechBuildGradlePath);
         MyFileUtils.moveFile(TEMP_SAVE + globalConfigFileName, globalConfigFilePath);
         MyFileUtils.moveFile(TEMP_SAVE + unityFileName, unityFilePath);
+    }
+
+    private void executeTestApk(String srcFileName){
+        String srcPath = "/Users/wangzhiguo/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit/" + srcFileName;
+        String desPath = STAND_SDK_PROJECT_PATH + "/app/libs/" + srcFileName;
+        String buildFile = "build.gradle";
+        startTestApk(srcPath, desPath, buildFile);
+        MyFileUtils.moveFile(TEMP_SAVE + buildFile, STAND_SDK_APP_PROJECT_BUILD_GRADLE_FILE);
+    }
+
+    private void startTestApk(String srcPath, String desPath, String buildFile) {
+        boolean backup = MyFileUtils.copyFile(STAND_SDK_APP_PROJECT_BUILD_GRADLE_FILE, TEMP_SAVE + buildFile);
+        if (!backup) {
+            MyLog.e(TAG, "备份build.gradle失败");
+            return ;
+        }
+
+        // 拷贝sdk
+        boolean copy = MyFileUtils.copyFile(srcPath, desPath);
+        if (!copy) {
+            MyLog.e(TAG, "拷贝aar失败！");
+            return ;
+        }
+
+        // 修改build.gradle
+        boolean modify = MyFileUtils.modifyFileContent(STAND_SDK_APP_PROJECT_BUILD_GRADLE_FILE, line -> {
+            if (line.contains("fileTree")) {
+                return "implementation fileTree(include: ['*.*'], dir: 'libs')";
+            } else if(line.contains("wstechapi")){
+                return "";
+            }
+            return line;
+        });
+
+        if (!modify) {
+            MyLog.e(TAG, "修改build.gradle文件失败！");
+            return ;
+        }
+
+        // 打包apk
+        CmdExecuteHelper mCmdExecuteHelper = new CmdExecuteHelper();
+        CmdBean[] cmd = new CmdBean[]{
+                new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
+                new CmdBean(GRADLE + " clean "),
+                new CmdBean(GRADLE + " assembleDebug"),
+        };
+        int i = mCmdExecuteHelper.executeCmdAdv(cmd);
+        if (i != 0) {
+            MyLog.e(TAG, "打包测试apk失败！");
+            return ;
+        }
+
+        String apk = STAND_SDK_PROJECT_PATH + "/app/build/outputs/apk/debug/app-debug.apk";
+        // 执行apk
+        CmdExecuteHelper mCmdExecuteHelper2 = new CmdExecuteHelper();
+        CmdBean[] cmd2 = new CmdBean[]{
+                new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
+                new CmdBean("adb uninstall com.tttrtclive.test"),
+                new CmdBean("adb install " + apk),
+        };
+        int i2 = mCmdExecuteHelper2.executeCmdAdv(cmd2);
+        if (i2 != 0) {
+            MyLog.e(TAG, "安装测试apk失败！");
+        }
     }
 
     private void restoreV7MoveFile(String fileName) {

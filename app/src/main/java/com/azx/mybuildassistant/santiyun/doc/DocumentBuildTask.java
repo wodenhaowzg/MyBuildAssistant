@@ -31,14 +31,15 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
     private DocClassBean[] classBeans = new DocClassBean[]{
             new DocClassBean("TTTVideoCanvas", "视频属性", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/TTTVideoCanvas.java"),
             new DocClassBean("TTTVideoFrame", "视频帧", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/bean/TTTVideoFrame.java"),
-            new DocClassBean("VideoCompositingLayout", "视频合成布局", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/VideoCompositingLayout.java"),
-            new DocClassBean("VideoCompositingLayout.Region", "视频位置信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/VideoCompositingLayout.java"),
+            new DocClassBean("VideoCompositingLayout", "画中画视频合成布局", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/VideoCompositingLayout.java"),
+            new DocClassBean("VideoCompositingLayout.Region", "画中画视频布局位置信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/VideoCompositingLayout.java"),
             new DocClassBean("LocalAudioStats", "本地音频统计信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/LocalAudioStats.java"),
             new DocClassBean("LocalVideoStats", "本地视频统计信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/LocalVideoStats.java"),
             new DocClassBean("RemoteAudioStats", "远端音频统计信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/RemoteAudioStats.java"),
             new DocClassBean("RemoteVideoStats", "远端视频统计信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/RemoteVideoStats.java"),
             new DocClassBean("RtcStats", "通话相关的统计信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/RtcStats.java"),
             new DocClassBean("PublisherConfiguration", "直播推流配置", WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/model/PublisherConfiguration.java"),
+            new DocClassBean("PublisherConfiguration.VideoMixerParams", "旁路推流视频配置", WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/model/PublisherConfiguration.java"),
             new DocClassBean("ScreenRecordConfig", "屏幕录制/分享配置信息", ENTERCONFAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/expansion/bean/ScreenRecordConfig.java")};
 
     private List<DocumentInitData.FunCodeBlock> funCodeBlocks, audioEffectFunCodeBlocks, callbackFunCodeBlocks, constantsCodeBlocks;
@@ -118,9 +119,13 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
             }
         }
         StringBuilder result = new StringBuilder();
-        result.append(documentBuildApiDetailOverview.buildOverViewDoc());
-        result.append("\n");
-        result.append("\n## 详细描述\n");
+
+//        result.append(documentBuildApiDetailOverview.buildOverViewDoc());
+//        result.append("\n");
+//        result.append("\n## 详细描述\n");
+
+        result.append("\n# 方法\n");
+
         for (ApiDetailBean apiDetailBean : apiDetailBeans) {
             result.append(apiDetailBean.toString());
             if (apiDetailBean.func_name.equals("getAudioEffectManager")) {
@@ -236,7 +241,7 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            if (!func_name.contains("create") || !func_name.contains("onJoinChannelSuccess")) {
+            if (!func_name.contains("create") && !func_name.contains("onJoinChannelSuccess")) {
                 sb.append("\n").append("---").append("\n");
             }
             // 第一行
@@ -258,7 +263,6 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
                 sb.append(introduce2).append("\n");
             }
 
-            sb.append(funcDetail.notices.toString()).append("\n");
             List<FunArgsBean> paramsBeans = new ArrayList<>();
             for (String func_params_name : func_params_names) {
                 String params_content = funcDetail.params.toString();
@@ -280,6 +284,8 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
                 String table_content = buildArgsBlock(paramsBeans);
                 sb.append(table_content).append("\n");
             }
+
+            sb.append("\n").append(funcDetail.notices.toString()).append("\n");
 
             String retValue = funcDetail.retVale.toString();
             if (!retValue.equals("")) {
@@ -367,14 +373,23 @@ public class DocumentBuildTask extends SanTiYunBaseTask {
 
         private String buildArgsBlock(List<FunArgsBean> args) {
             StringBuilder sb = new StringBuilder();
-            sb.append("<table width=100% >").append("\n");
+            // html格式的表格
+//            sb.append("<table width=100% >").append("\n");
+//            for (FunArgsBean arg : args) {
+//                sb.append(SPACE).append("<tr>").append("\n");
+//                sb.append(SPACE).append(SPACE).append("<td>").append(arg.mName).append("</td>").append("\n");
+//                sb.append(SPACE).append(SPACE).append("<td>").append(arg.mDesc).append("</td>").append("\n");
+//                sb.append(SPACE).append("</tr>").append("\n");
+//            }
+//            sb.append("</table>");
+
+            sb.append("| 名称 | 描述 |").append("\n");
+            sb.append("| :--------- | :--------- |").append("\n");
             for (FunArgsBean arg : args) {
-                sb.append(SPACE).append("<tr>").append("\n");
-                sb.append(SPACE).append(SPACE).append("<td>").append(arg.mName).append("</td>").append("\n");
-                sb.append(SPACE).append(SPACE).append("<td>").append(arg.mDesc).append("</td>").append("\n");
-                sb.append(SPACE).append("</tr>").append("\n");
+                // 转义字符串中的下划线，否则在md中显示，字符串会倾斜并连体，比如：Constants.RENDER_MODE_HIDDEN
+                String des = arg.mDesc.replaceAll("_", "\\\\_");
+                sb.append("| ").append(arg.mName).append(" | ").append(des).append(" |").append("\n");
             }
-            sb.append("</table>");
             return sb.toString();
         }
 

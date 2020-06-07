@@ -13,6 +13,8 @@ abstract class BuildBaseTaskImpl extends BuildBaseTask {
             return "//" + wstech_link_myvideo;
         } else if (line.contains(wstech_link_screen)) {
             return "//" + wstech_link_screen;
+        } else if (line.contains(wstech_link_myvideoimprove)) {
+            return "//" + wstech_link_myvideoimprove;
         } else if (line.contains(wstech_ijk_java)) {
             return "//" + wstech_ijk_java;
         } else if (line.contains(wstech_ijk_exo)) {
@@ -22,6 +24,7 @@ abstract class BuildBaseTaskImpl extends BuildBaseTask {
         } else if (line.contains(wstech_embed_enterconfapi) ||
                 line.contains(wstech_embed_myaudio) ||
                 line.contains(wstech_embed_myvideo) ||
+                line.contains(wstech_embed_myvideoimprove) ||
                 line.contains(wstech_embed_screen)) {
             return line.replaceAll("//", "");
         }

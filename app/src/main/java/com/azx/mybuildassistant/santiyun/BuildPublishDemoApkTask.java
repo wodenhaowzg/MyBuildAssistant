@@ -13,19 +13,20 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask {
 
     private static final String TAG = BuildPublishDemoApkTask.class.getSimpleName();
 
-    private static final String COMMON_PATH = "/Users/wangzhiguo/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit";
+    public static final int DEMO_STAND_TEST = 1;
+    public static final int DEMO_ENTER_ROOM_TEST = 2;
+    public static final int DEMO_LIVE_CHAT = 3;
+    public static final int DEMO_AUDIO_CHAT = 4;
+    public static final int DEMO_VIDEO_CHAT = 5;
 
-    private static final String APK_OUTPUT_PATH = COMMON_PATH + "/Publish";
-    public static String SDK_CACHE = MACHINE_PATH + "/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/" +
-            "TTTRtcEngine_AndroidKit/SDK_CACHE/3T_Native_SDK_for_Android_V2.8.0_Full_2020_04_20.aar";
-    public static String SDK_VOICE_CACHE = MACHINE_PATH + "/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/" +
-            "TTTRtcEngine_AndroidKit/SDK_CACHE/3T_Native_SDK_for_Android_V2.8.0_Full_2020_04_20.aar";
-    private static final String SDK_NEW_NAME = "/TTT_SDK.aar";
+    private static final String COMMON_PATH = BaseTask.MACHINE_PATH + File.separator + "Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit"; // FIXME 硬编路径
 
+    private static final String APK_OUTPUT_PATH = COMMON_PATH + File.separator + "Publish";
+    public static String SDK_CACHE, SDK_VOICE_CACHE;
+    private static final String SDK_NEW_NAME = File.separator + "TTT_SDK.aar";
 
     private static final String APK_SRC_NAME = File.separator + "app-debug.apk";
-    private static final String APK_SRC_PATH = File.separator + "build" + File.separator + "outputs" + File.separator + "apk"
-            + File.separator + "debug" + APK_SRC_NAME;
+    private static final String APK_SRC_PATH = File.separator + "build" + File.separator + "outputs" + File.separator + "apk" + File.separator + "debug" + APK_SRC_NAME;
 
     private static final String LIVE_OUTPUT_APK_PATH = LIVE_PROJECT_PATH + APK_SRC_PATH;
     private static final String LIVE_APK_TARGET_NAME = File.separator + "连麦直播.apk";
@@ -36,48 +37,78 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask {
     private static final String AUDIO_CHAT_OUTPUT_APK_PATH = AUDIO_CHAT_PROJECT_PATH + APK_SRC_PATH;
     private static final String AIDEO_CHAT_APK_TARGET_NAME = File.separator + "音频通话.apk";
 
+    private static final String TEST_SDK_PROJECT_OUTPUT_APK_PATH = TEST_SDK_PROJECT_PATH + APK_SRC_PATH;
+    private static final String TEST_SDK_PROJECT_APK_TARGET_NAME = File.separator + "测试入会Demo.apk";
+
+    private static final String STAND_SDK_APP_PROJECT_OUTPUT_APK_PATH = STAND_SDK_APP_PROJECT_PATH + APK_SRC_PATH;
+    private static final String STAND_SDK_APP_PROJECT_APK_TARGET_NAME = File.separator + "测试连麦Demo.apk";
+
+    private int[] buildApks;
+
+    public void setBuildApks(int[] apks){
+        buildApks = apks;
+    }
+
     @Override
     public int start() {
-        // Delete old sdk
-        String live_des_dir = LIVE_PROJECT_PATH + "/libs";
-        if (!deleteOldSdkFile(live_des_dir)) return 0;
-        String video_des_dir = VIDEO_CHAT_PROJECT_PATH + "/libs";
-        if (!deleteOldSdkFile(video_des_dir)) return 0;
-        String audio_des_dir = AUDIO_CHAT_PROJECT_PATH + "/libs";
-        if (!deleteOldSdkFile(audio_des_dir)) return 0;
+        for (int buildApk : buildApks) {
+            CmdExecuteHelper mCmdExecuteHelper;
+            switch (buildApk) {
+                case DEMO_STAND_TEST:
+                    mCmdExecuteHelper = new CmdExecuteHelper();
+                    PublishDemoBean stand_sdk_bean = new PublishDemoBean(STAND_SDK_APP_PROJECT_PATH, STAND_SDK_APP_PROJECT_OUTPUT_APK_PATH, APK_SRC_NAME, STAND_SDK_APP_PROJECT_APK_TARGET_NAME);
+                    CmdBean[] cmdBeans5 = buildCmd(stand_sdk_bean);
+                    mCmdExecuteHelper.executeCmdAdv(cmdBeans5);
+                    break;
+                case DEMO_ENTER_ROOM_TEST:
+                    mCmdExecuteHelper = new CmdExecuteHelper();
+                    PublishDemoBean test_sdk_bean = new PublishDemoBean(TEST_SDK_PROJECT_PATH, TEST_SDK_PROJECT_OUTPUT_APK_PATH, APK_SRC_NAME, TEST_SDK_PROJECT_APK_TARGET_NAME);
+                    CmdBean[] cmdBeans4 = buildCmd(test_sdk_bean);
+                    mCmdExecuteHelper.executeCmdAdv(cmdBeans4);
+                    break;
+            }
+        }
 
-        // Copy new sdk
-        if (!copySdkFile(SDK_CACHE, live_des_dir)) return 0;
-        if (!copySdkFile(SDK_CACHE, video_des_dir)) return 0;
-        if (!copySdkFile(SDK_VOICE_CACHE, audio_des_dir)) return 0;
-
-        CmdExecuteHelper mCmdExecuteHelper = new CmdExecuteHelper();
-        CmdBean[] cmd0 = new CmdBean[]{
-                new CmdBean("rm -rf " + APK_OUTPUT_PATH),
-                new CmdBean("mkdir " + APK_OUTPUT_PATH),
-        };
-        mCmdExecuteHelper.executeCmdAdv(cmd0);
-
-        mCmdExecuteHelper = new CmdExecuteHelper();
-        PublishDemoBean live_bean = new PublishDemoBean(LIVE_PROJECT_PATH, LIVE_OUTPUT_APK_PATH, APK_SRC_NAME, LIVE_APK_TARGET_NAME);
-        CmdBean[] cmdBeans = buildCmd(live_bean);
-        mCmdExecuteHelper.executeCmdAdv(cmdBeans);
-
-        mCmdExecuteHelper = new CmdExecuteHelper();
-        PublishDemoBean video_chat_bean = new PublishDemoBean(VIDEO_CHAT_PROJECT_PATH, VIDEO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, VIDEO_CHAT_APK_TARGET_NAME);
-        CmdBean[] cmdBeans2 = buildCmd(video_chat_bean);
-        mCmdExecuteHelper.executeCmdAdv(cmdBeans2);
-
-        mCmdExecuteHelper = new CmdExecuteHelper();
-        PublishDemoBean audio_chat_bean = new PublishDemoBean(AUDIO_CHAT_PROJECT_PATH, AUDIO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, AIDEO_CHAT_APK_TARGET_NAME);
-        CmdBean[] cmdBeans3 = buildCmd(audio_chat_bean);
-        mCmdExecuteHelper.executeCmdAdv(cmdBeans3);
-
-        mCmdExecuteHelper = new CmdExecuteHelper();
-        CmdBean[] cmd4 = new CmdBean[]{
-                new CmdBean("open " + APK_OUTPUT_PATH),
-        };
-        mCmdExecuteHelper.executeCmdAdv(cmd4);
+//        CmdExecuteHelper mCmdExecuteHelper = new CmdExecuteHelper();
+//        CmdBean[] cmd4 = new CmdBean[]{
+//                new CmdBean("open " + APK_OUTPUT_PATH),
+//        };
+//        mCmdExecuteHelper.executeCmdAdv(cmd4);
+//
+//        // Delete old sdk
+//        String live_des_dir = LIVE_PROJECT_PATH + "/libs";
+//        if (!deleteOldSdkFile(live_des_dir)) return 0;
+//        String video_des_dir = VIDEO_CHAT_PROJECT_PATH + "/libs";
+//        if (!deleteOldSdkFile(video_des_dir)) return 0;
+//        String audio_des_dir = AUDIO_CHAT_PROJECT_PATH + "/libs";
+//        if (!deleteOldSdkFile(audio_des_dir)) return 0;
+//
+//        // Copy new sdk
+//        if (!copySdkFile(SDK_CACHE, live_des_dir)) return 0;
+//        if (!copySdkFile(SDK_CACHE, video_des_dir)) return 0;
+//        if (!copySdkFile(SDK_VOICE_CACHE, audio_des_dir)) return 0;
+//
+//        mCmdExecuteHelper = new CmdExecuteHelper();
+//        CmdBean[] cmd0 = new CmdBean[]{
+//                new CmdBean("rm -rf " + APK_OUTPUT_PATH),
+//                new CmdBean("mkdir " + APK_OUTPUT_PATH),
+//        };
+//        mCmdExecuteHelper.executeCmdAdv(cmd0);
+//
+//        mCmdExecuteHelper = new CmdExecuteHelper();
+//        PublishDemoBean live_bean = new PublishDemoBean(LIVE_PROJECT_PATH, LIVE_OUTPUT_APK_PATH, APK_SRC_NAME, LIVE_APK_TARGET_NAME);
+//        CmdBean[] cmdBeans = buildCmd(live_bean);
+//        mCmdExecuteHelper.executeCmdAdv(cmdBeans);
+//
+//        mCmdExecuteHelper = new CmdExecuteHelper();
+//        PublishDemoBean video_chat_bean = new PublishDemoBean(VIDEO_CHAT_PROJECT_PATH, VIDEO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, VIDEO_CHAT_APK_TARGET_NAME);
+//        CmdBean[] cmdBeans2 = buildCmd(video_chat_bean);
+//        mCmdExecuteHelper.executeCmdAdv(cmdBeans2);
+//
+//        mCmdExecuteHelper = new CmdExecuteHelper();
+//        PublishDemoBean audio_chat_bean = new PublishDemoBean(AUDIO_CHAT_PROJECT_PATH, AUDIO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, AIDEO_CHAT_APK_TARGET_NAME);
+//        CmdBean[] cmdBeans3 = buildCmd(audio_chat_bean);
+//        mCmdExecuteHelper.executeCmdAdv(cmdBeans3);
         return 0;
     }
 

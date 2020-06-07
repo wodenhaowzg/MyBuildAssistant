@@ -1,4 +1,4 @@
-package com.azx.mybuildassistant.santiyun.sdk;
+package com.azx.mybuildassistant.santiyun.sdk.module;
 
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
 import com.azx.mybuildassistant.utils.MyFileUtils;
@@ -7,7 +7,7 @@ import com.azx.mybuildassistant.utils.MyLog;
 import java.io.File;
 
 
-class FaceModule extends BaseModule {
+public class FaceModule extends BaseModule {
 
     private static final String TAG = "FaceModule";
 
@@ -25,7 +25,7 @@ class FaceModule extends BaseModule {
     private static final String FACE_FLAG_THREE = "VersaManager.init(mContext, this);";
 
     @Override
-    boolean changeCodeToBuild(VersionSelect.VersionBean bean) {
+    public boolean changeCodeToBuild(VersionSelect.VersionBean bean) {
         boolean b = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + FACE_MODULE_AAR, TEMP_SAVE + FACE_MODULE_AAR);
         if (!b) {
             MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_AAR 文件失败！");
@@ -85,7 +85,7 @@ class FaceModule extends BaseModule {
     }
 
     @Override
-    boolean restoreCode(VersionSelect.VersionBean bean) {
+    public boolean restoreCode(VersionSelect.VersionBean bean) {
         MyFileUtils.moveFile(TEMP_SAVE + FACE_MODULE_AAR, MYVIDEO_LIB_PATH + FACE_MODULE_AAR);
         MyFileUtils.moveFileDir(TEMP_SAVE + MYVIDEO_ASSETS_NAME, MYVIDEO_ASSETS_PATH);
         MyFileUtils.moveFile(TEMP_SAVE + FACE_MODULE_JAVA_FILE_NAME, FACE_MODULE_JAVA_FILE_PATH);

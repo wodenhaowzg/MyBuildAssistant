@@ -20,15 +20,23 @@ public class DocClassBean {
         try {
             reader = new BufferedReader(new FileReader(filePath));
             String line;
-            boolean startRead = false, endRead = false, regionCheck = false;
+            boolean startRead = false, endRead = false, regionCheck = false, videoMixerCheck = false;
             StringBuilder stringBuilder = null;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("------ 过时 API")) {
                     break;
                 }
 
-                if (!regionCheck && "VideoCompositingLayout.Region".equals(className) && !line.contains("public static class Region")) {
-                    regionCheck = true;
+                if (!regionCheck && "VideoCompositingLayout.Region".equals(className)) {
+                    if (!line.contains("public static class Region")) {
+                        continue;
+                    } else {
+                        regionCheck = true;
+                    }
+                }
+
+                if (!videoMixerCheck && "PublisherConfiguration.VideoMixerParams".equals(className) && !line.contains("public static class VideoMixerParams")) {
+                    videoMixerCheck = true;
                     continue;
                 }
 
@@ -38,7 +46,7 @@ public class DocClassBean {
                 }
 
                 if (line.contains("------ 构造函数")) {
-                    startRead = false;
+                    break;
                 }
 
                 if (startRead) {

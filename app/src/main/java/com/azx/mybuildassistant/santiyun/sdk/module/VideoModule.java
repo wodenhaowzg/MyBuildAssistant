@@ -1,10 +1,10 @@
-package com.azx.mybuildassistant.santiyun.sdk;
+package com.azx.mybuildassistant.santiyun.sdk.module;
 
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
 
-class VideoModule extends BaseModule {
+public class VideoModule extends BaseModule {
 
     private static final String TAG = VideoModule.class.getSimpleName();
 
@@ -19,7 +19,7 @@ class VideoModule extends BaseModule {
     private static final String VIDEO_MODULE_FUNC_FLAG_THREE = "SurfaceView CreateRendererView(";
 
     @Override
-    boolean changeCodeToBuild(VersionSelect.VersionBean versionBean) {
+    public boolean changeCodeToBuild(VersionSelect.VersionBean versionBean) {
         if (!versionBean.videoModule) {
             boolean b = handleSoLib(versionBean);
             if (!b) {
@@ -150,7 +150,7 @@ class VideoModule extends BaseModule {
     }
 
     @Override
-    boolean restoreCode(VersionSelect.VersionBean versionBean) {
+    public boolean restoreCode(VersionSelect.VersionBean versionBean) {
         if (!versionBean.videoModule) {
             restoreV7MoveFile(VIDEO_MODULE_CODEC_SO);
             restoreV7MoveFile(VIDEO_MODULE_YUV_SO);

@@ -14,9 +14,15 @@ import java.util.concurrent.Executors;
 
 public class CmdExecuteHelper {
 
-    public static final String CMD_STOP_FLAG = "FINISH";
+    private static final String TEMP_FILE = "/Users/wangzhiguo/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap" +
+            "/TTTRtcEngine_AndroidKit/temp/execute.sh";
     private static final String TAG = CmdExecuteHelper.class.getSimpleName();
-    private static final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private OnProcessOutputContent onProcessOutputContent;
+
+    public void setOnProcessOutputContent(OnProcessOutputContent onProcessOutputContent) {
+        this.onProcessOutputContent = onProcessOutputContent;
+    }
 
     public int executeCmdAdv(CmdBean[] cmds) {
         String[] realCmds = new String[cmds.length];
@@ -28,9 +34,12 @@ public class CmdExecuteHelper {
 
         String sh;
         try {
-            File file = new File("/Users/wangzhiguo/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit/temp/execute.sh");
+            File file = new File(TEMP_FILE);
             if (file.exists()) {
-                file.delete();
+                boolean delete = file.delete();
+                if (!delete) {
+                    return -1;
+                }
             }
             BufferedWriter buw = new BufferedWriter(new FileWriter(file));
             for (String realCmd : realCmds) {
@@ -48,7 +57,7 @@ public class CmdExecuteHelper {
             sh = file.getAbsolutePath();
         } catch (Exception e) {
             e.printStackTrace();
-            return -1;
+            return -2;
         }
 
         try {
@@ -57,7 +66,7 @@ public class CmdExecuteHelper {
             executeProcess(process);
         } catch (IOException e) {
             e.printStackTrace();
-            return -2;
+            return -3;
         }
         return 0;
     }
@@ -65,6 +74,9 @@ public class CmdExecuteHelper {
     private void executeProcess(Process process) {
         InputStream inputStream = process.getInputStream();
         InputStreamReaderRunnable inputRunnable = new InputStreamReaderRunnable(inputStream, "正常");
+        if (onProcessOutputContent != null) {
+            inputRunnable.setOnProcessOutputContent(onProcessOutputContent);
+        }
         executorService.execute(inputRunnable);
         InputStream errorStream = process.getErrorStream();
         InputStreamReaderRunnable errorRunnable = new InputStreamReaderRunnable(errorStream, "错误");
@@ -74,24 +86,48 @@ public class CmdExecuteHelper {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        process.destroy();
+
+        MyLog.d(TAG, "进程执行完毕! " + process);
         inputRunnable.stop = true;
         errorRunnable.stop = true;
+
+        while (!inputRunnable.finished){
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        while (!errorRunnable.finished){
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        process.destroy();
     }
 
     static class InputStreamReaderRunnable implements Runnable {
         private InputStream ins;
-        private boolean stop;
+        private volatile boolean stop, finished;
         private String tag;
+        private OnProcessOutputContent onProcessOutputContent;
 
         InputStreamReaderRunnable(InputStream ins, String tag) {
             this.ins = ins;
             this.tag = tag;
         }
 
+        void setOnProcessOutputContent(OnProcessOutputContent onProcessOutputContent) {
+            this.onProcessOutputContent = onProcessOutputContent;
+        }
+
         @Override
         public void run() {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(ins));
+            InputStreamReader inputStreamReader = new InputStreamReader(ins);
+            BufferedReader reader = new BufferedReader(inputStreamReader);
             try {
                 MyLog.d(TAG, tag + "输出流线程启动! " + Thread.currentThread().getName());
                 while (!stop) {
@@ -118,52 +154,35 @@ public class CmdExecuteHelper {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                try {
+                    inputStreamReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if (ins != null) {
+                    try {
+                        ins.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    ins = null;
+                }
+                finished = true;
             }
         }
 
         void processOutputString(String content) {
             MyLog.d(TAG, tag + "输出 : " + content);
+            if (tag.equals("正常") && onProcessOutputContent != null) {
+                onProcessOutputContent.outputNormalContent(content);
+            }
         }
     }
 
-//    static class CmdExecuteRunnable implements Runnable {
-//
-//        Process process;
-//        private CmdBean[] cmds;
-//        private String currentStopFlag;
-//        private volatile boolean isWaitting;
-//
-//        CmdExecuteRunnable(Process process, CmdBean[] cmds) {
-//            this.cmds = cmds;
-//            this.process = process;
-//        }
-//
-//        @Override
-//        public void run() {
-//            MyLog.d(TAG, "命令执行线程启动 : " + Thread.currentThread().getName());
-//            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())), true);
-//            for (CmdBean cmd : cmds) {
-//                MyLog.d(TAG, "开始执行命令: " + cmd.cmd + " | " + cmd.stopFlag);
-//                if (cmd.stopFlag == null) {
-//                    cmd.stopFlag = CMD_STOP_FLAG;
-//                }
-//                currentStopFlag = cmd.stopFlag;
-//                out.println(cmd.cmd);
-////                out.println("echo " + currentStopFlag);
-//                isWaitting = true;
-//                while (isWaitting) {
-//                    try {
-////                        MyLog.d(TAG, "命令执行线程等待中...");
-//                        Thread.sleep(1000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//            MyLog.d(TAG, "命令执行完毕，销毁进程。" + process);
-//            out.close();
-//            process.destroy();
-//            process = null;
-//        }
-//    }
+    public interface OnProcessOutputContent{
+
+        void outputNormalContent(String content);
+    }
 }
