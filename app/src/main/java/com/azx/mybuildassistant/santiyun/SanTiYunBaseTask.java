@@ -37,7 +37,7 @@ public abstract class SanTiYunBaseTask extends BaseTask {
     private static final String MYAUDIO_MODULE_NAME = "myaudio";
     protected static final String MYAUDIO_MODULE_PATH = OLD_SDK_PROJECT_PATH + File.separator + MYAUDIO_MODULE_NAME;
     // SDK 中的 myvideo 模块
-    private static final String MYVIDEO_MODULE_NAME = "myvideo";
+    protected static final String MYVIDEO_MODULE_NAME = "myvideo";
     protected static final String MYVIDEO_MODULE_PATH = OLD_SDK_PROJECT_PATH + File.separator + MYVIDEO_MODULE_NAME;
     // SDK 中的 wstechapi 模块
     private static final String WSTECHAPI_MODULE_NAME = "wstechapi";
