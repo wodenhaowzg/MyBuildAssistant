@@ -9,39 +9,57 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CheckCommit implements CmdExecuteHelper.OnProcessOutputContent {
+public class CheckCommit implements CmdExecuteHelper.OnProcessOutputContentWithTag {
 
     private static final String GIT_NEWEST = "Your branch is up to date";
     private static final String TAG = CheckCommit.class.getSimpleName();
     private String[] mGitPaths = new String[]{
+            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyAlgorithm",
+            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyAndroidFourComponents",
+            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyAndroidTest",
+            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyBuildAssistant",
+            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyFirstGroovyProject",
             Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyHttpTest",
+            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyRxJava",
             Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyUIProject",
     };
     private String mCurrentGitPath;
-    private List<String> mNeedCommit = new ArrayList<>();
+    private List<String> mNoNeedCommit = new ArrayList<>();
 
     public void start() {
-        CmdExecuteHelper mCmdExecuteHelper = new CmdExecuteHelper();
-        mCmdExecuteHelper.setOnProcessOutputContent(this);
+        CmdExecuteHelper cmdExecuteHelper = new CmdExecuteHelper();
+        cmdExecuteHelper.setOnProcessOutputContentWithTag(this);
         for (String path : mGitPaths) {
             mCurrentGitPath = path;
             CmdBean[] cmd = new CmdBean[]{
                     new CmdBean("cd " + path),
                     new CmdBean("git commit"),
             };
-            mCmdExecuteHelper.executeCmdAdv(cmd);
+            cmdExecuteHelper.setTag(path);
+                    cmdExecuteHelper.executeCmdAdv(cmd);
         }
 
-        for (String gitPath : mNeedCommit) {
-            MyLog.e(TAG, "gitPath : " + gitPath);
+        List<String> needCommit = new ArrayList<>();
+        for (String gitPath : mGitPaths) {
+            if (!mNoNeedCommit.contains(gitPath)) {
+                needCommit.add(gitPath);
+            }
+        }
+
+        for (String gitPath : mNoNeedCommit) {
+            MyLog.e(TAG, "no need commit : " + gitPath);
+        }
+
+        for (String gitPath : needCommit) {
+            MyLog.e(TAG, "need commit: " + gitPath);
         }
     }
 
     @Override
-    public void outputNormalContent(String content) {
-        MyLog.e(TAG, "content : " + content);
-        if (!content.contains(GIT_NEWEST)) {
-            mNeedCommit.add(mCurrentGitPath);
+    public void outputNormalContent(Object tag, String content) {
+        MyLog.e(TAG, "content : " + content + " | " + tag);
+        if (content.contains(GIT_NEWEST)) {
+            mNoNeedCommit.add(mCurrentGitPath);
         }
     }
 
