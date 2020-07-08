@@ -1,5 +1,6 @@
 package com.azx.mybuildassistant.utils;
 
+import com.azx.mybuildassistant.Constants;
 import com.azx.mybuildassistant.bean.CmdBean;
 
 import java.io.BufferedReader;
@@ -14,8 +15,7 @@ import java.util.concurrent.Executors;
 
 public class CmdExecuteHelper {
 
-    private static final String TEMP_FILE = "/Users/wangzhiguo/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap" +
-            "/TTTRtcEngine_AndroidKit/temp/execute.sh";
+    private static final String TEMP_FILE = Constants.COMMON_FILE_PATH_PREFIX + "/temp/execute.sh";
     private static final String TAG = CmdExecuteHelper.class.getSimpleName();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private OnProcessOutputContent onProcessOutputContent;
