@@ -27,7 +27,7 @@ public class FaceModule extends BaseModule {
 
     // TTTRtcEngineImpl.java
     private static final String FACE_FLAG_TWO = "VersaManager.OnVersaInitListener";
-    private static final String FACE_FLAG_THREE = "VersaManager.init(mContext, this);";
+    private static final String FACE_FLAG_THREE = "VersaManager.init(context, this);";
 
     @Override
     public boolean changeCodeToBuild(VersionSelect.VersionBean bean) {

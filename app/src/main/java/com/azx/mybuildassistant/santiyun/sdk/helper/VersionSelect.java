@@ -13,8 +13,8 @@ public class VersionSelect {
     public static final int STAND_FULL_V7_SDK = 2;
     public static final int STAND_VOICE_V8_SDK = 3;
     public static final int STAND_VOICE_V7_SDK = 4;
-    public static final int STAND_SDK_REMOVE_AUDIO_EFFECT_IJK = 5;
-    public static final int STAND_SDK_REMOVE_AUDIO_EFFECT = 6;
+    public static final int STAND_HWL = 5;
+    public static final int STAND_SDK_REMOVE_AUDIO_EFFECT_IJK = 6;
 
     //    public static final int NORMAL_FULL_V7_SDK = 50;
     public static final int XIAOYUN_SDK = 100; // 淆云
@@ -49,6 +49,10 @@ public class VersionSelect {
                 break;
             case STAND_VOICE_V7_SDK:
                 bean.audioEffect = true;
+                break;
+            case STAND_HWL:
+                bean.v8Module = true;
+                bean.videoModule = true;
                 break;
             case STAND_SDK_REMOVE_AUDIO_EFFECT_IJK: // TY, HZ
             case CUSTOM_TY:
