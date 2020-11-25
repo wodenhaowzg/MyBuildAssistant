@@ -9,11 +9,14 @@ public class Constants {
             "zanewang"; // zanewang or wangzhiguo
 
     public static final String COMMON_FILE_PATH_PREFIX = MACHINE_PATH + File.separator +
-            "Desktop" + File.separator +
+            "Downloads" + File.separator +
+            "WorkSpace" + File.separator +
+            "MyGithub" + File.separator +
             "MyBuildAssistant";
+
 
     public static final String MYGITHUB_FILE_DIR_PATH = MACHINE_PATH + File.separator +
             "Downloads" + File.separator +
             "WorkSpace" + File.separator +
-            "MyGithubs";
+            "MyGithub";
 }

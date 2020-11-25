@@ -5,30 +5,23 @@ import java.io.File;
 public abstract class SanTiYunBaseTask extends BaseTask {
 
     // 三体云代码仓库路径
-    private static final String SANTIYUN_PATH = MACHINE_PATH + File.separator + "Downloads" + File.separator +
-            "Learns" + File.separator +
-            "Guo_Company_Svn";
+    protected static final String SANTIYUN_PATH = MACHINE_PATH + File.separator + "Downloads" + File.separator +
+            "WorkSpace" + File.separator +
+            "Company" + File.separator +
+            "Santiyun" + File.separator;
+    // 三体云 SDK 路径
+    private static final String SANTIYUN_SDK_PATH = SANTIYUN_PATH + File.separator + "Code" + File.separator + "SDK";
+    // 三体云 SDK DEMO 路径
+    private static final String SANTIYUN_SDK_DEMO_PATH = SANTIYUN_SDK_PATH + File.separator + "Demo" + File.separator + "android";
 
+    // SDK 工程路径
+    protected static final String STAND_SDK_PROJECT_PATH = SANTIYUN_SDK_DEMO_PATH + File.separator + "WS_ANDROID_MOMODemo";
+    // MOMO 使用的 SDK 工程路径
+    protected static final String OLD_SDK_PROJECT_PATH = SANTIYUN_SDK_DEMO_PATH + File.separator + "WS_ANDROID_DEMO";
+    // 全民分支使用的 SDK 工程路径
+    protected static final String QUANMIN_SDK_PROJECT_PATH = SANTIYUN_SDK_DEMO_PATH + File.separator + "QUANMIN_LIVE_DEMO";
     // 三体云在github上的Demo的存放路径
     private static final String GITHUB_PATH = SANTIYUN_PATH + File.separator + "GitHub";
-
-    // 三体云 SDK 路径
-    private static final String SANTIYUN_SDK_PATH = File.separator + "GitLab" + File.separator +
-            "3TClient" + File.separator +
-            "SDK";
-    // SDK 工程路径
-    protected static final String STAND_SDK_PROJECT_PATH = SANTIYUN_PATH + SANTIYUN_SDK_PATH + File.separator
-            + "Demo" + File.separator
-            + "android" + File.separator
-            + "WS_ANDROID_MOMODemo";
-    // MOMO 使用的 SDK 工程路径
-    private static final String OLD_SDK_PROJECT_PATH = SANTIYUN_PATH + SANTIYUN_SDK_PATH + File.separator + "Demo" + File.separator +
-            "android" + File.separator +
-            "WS_ANDROID_DEMO";
-    // 全民分支使用的 SDK 工程路径
-    protected static final String QUANMIN_SDK_PROJECT_PATH = SANTIYUN_PATH + SANTIYUN_SDK_PATH + File.separator + "Demo" + File.separator +
-            "android" + File.separator +
-            "QUANMIN_LIVE_DEMO";
 
     // SDK 中的 enterconfapi 模块
     private static final String ENTERCONFAPI_MODULE_NAME = "enterconfapi";

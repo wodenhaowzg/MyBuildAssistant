@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.azx.mybuildassistant;
+package com.azx.mybuildassistant.ftp;
 
 import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTP;

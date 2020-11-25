@@ -7,7 +7,6 @@ import java.io.File;
 public abstract class BuildBaseTask extends SanTiYunBaseTask {
 
     static final String AAR_SRC = "/wstechapi-release.aar";
-    protected final String TEMP_SAVE = MACHINE_PATH + "/Downloads/Learns/MyGithubs/MyBuildAssistant/temp_save";
 
     // STAND
     static String globalConfigFileName = File.separator + "GlobalConfig.java";

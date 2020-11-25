@@ -24,8 +24,8 @@ import java.util.List;
  */
 public class BuildStandSdkTask extends BuildBaseTaskImpl {
 
-    private static final String AAR_SAVE_PATH = MACHINE_PATH + "/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit";
-    private static final String SDK_CACHE_PATH = MACHINE_PATH + "/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit/SDK_CACHE";
+    private static final String AAR_SAVE_PATH = SANTIYUN_PATH + "/Code/TTTRtcEngine_AndroidKit";
+    private static final String SDK_CACHE_PATH = SANTIYUN_PATH + "/Code/TTTRtcEngine_AndroidKit/SDK_CACHE";
 
     public static String SDK_CACHE_FILE;
     public static String SDK_CACHE_VOICE_FILE;
@@ -51,7 +51,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
 //            MyLog.error(TAG, "startBuild -> changeBranchTag failed!");
 //        }
 
-        buildPublishSdk(new int[]{VersionSelect.STAND_FULL_V7_SDK});
+        buildPublishSdk(new int[]{VersionSelect.STAND_HWL});
 //        executeTestApk("3T_Native_SDK_for_Android_V2.9.6_Full_2020_05_15.aar");
 
 //         出异常情况恢复代码
