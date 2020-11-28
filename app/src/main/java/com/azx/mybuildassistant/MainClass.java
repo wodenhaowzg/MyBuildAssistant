@@ -14,9 +14,9 @@ public class MainClass {
 //        ExtractExposedObjectTask task = new ExtractExposedObjectTask();
 //        task.start();
 
-        BuildStandSdkTask task = new BuildStandSdkTask();
-        task.start();
-//
+//        BuildStandSdkTask task = new BuildStandSdkTask();
+//        task.start();
+////
 //        BuildPublishDemoApkTask sdk = new BuildPublishDemoApkTask();
 //        sdk.start();
 
@@ -24,6 +24,9 @@ public class MainClass {
 //
 //        AdbConnecter adbConnecter = new AdbConnecter();
 //        adbConnecter.startConnect();
+
+        ApkBuilder apkBuilder = new ApkBuilder();
+        apkBuilder.start();
     }
 
     private static void exePublish() {

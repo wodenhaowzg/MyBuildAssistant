@@ -2,14 +2,14 @@ package com.azx.mybuildassistant.git;
 
 import com.azx.mybuildassistant.Constants;
 import com.azx.mybuildassistant.bean.CmdBean;
-import com.azx.mybuildassistant.utils.CmdExecuteHelper;
+import com.azx.mybuildassistant.utils.CmdExecuter;
 import com.azx.mybuildassistant.utils.MyLog;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CheckCommit implements CmdExecuteHelper.OnProcessOutputContentWithTag {
+public class CheckCommit implements CmdExecuter.OnProcessOutputContentWithTag {
 
     private static final String GIT_NEWEST = "Your branch is up to date";
     private static final String TAG = CheckCommit.class.getSimpleName();
@@ -27,16 +27,16 @@ public class CheckCommit implements CmdExecuteHelper.OnProcessOutputContentWithT
     private List<String> mNoNeedCommit = new ArrayList<>();
 
     public void start() {
-        CmdExecuteHelper cmdExecuteHelper = new CmdExecuteHelper();
-        cmdExecuteHelper.setOnProcessOutputContentWithTag(this);
+        CmdExecuter cmdExecuter = new CmdExecuter();
+        cmdExecuter.setOnProcessOutputContentWithTag(this);
         for (String path : mGitPaths) {
             mCurrentGitPath = path;
             CmdBean[] cmd = new CmdBean[]{
                     new CmdBean("cd " + path),
                     new CmdBean("git commit"),
             };
-            cmdExecuteHelper.setTag(path);
-                    cmdExecuteHelper.executeCmdAdv(cmd);
+            cmdExecuter.setTag(path);
+                    cmdExecuter.executeCmdAdv(cmd);
         }
 
         List<String> needCommit = new ArrayList<>();

@@ -13,10 +13,10 @@ import java.io.InputStreamReader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class CmdExecuteHelper {
+public class CmdExecuter {
 
     private static final String TEMP_FILE = Constants.COMMON_FILE_PATH_PREFIX + "/temp/execute.sh";
-    private static final String TAG = CmdExecuteHelper.class.getSimpleName();
+    private static final String TAG = CmdExecuter.class.getSimpleName();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private OnProcessOutputContent onProcessOutputContent;
     private OnProcessOutputContentWithTag onProcessOutputContentWithTag;

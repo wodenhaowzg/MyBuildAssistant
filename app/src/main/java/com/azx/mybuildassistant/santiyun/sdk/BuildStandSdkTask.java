@@ -8,7 +8,7 @@ import com.azx.mybuildassistant.santiyun.sdk.module.FaceModule;
 import com.azx.mybuildassistant.santiyun.sdk.module.IjkModule;
 import com.azx.mybuildassistant.santiyun.sdk.module.RtmpModule;
 import com.azx.mybuildassistant.santiyun.sdk.module.VideoModule;
-import com.azx.mybuildassistant.utils.CmdExecuteHelper;
+import com.azx.mybuildassistant.utils.CmdExecuter;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
 import com.azx.mybuildassistant.utils.MyTextUtils;
@@ -294,13 +294,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     }
 
     private void executeBuild(String finallyFilePath, VersionSelect versionSelect, VersionSelect.VersionBean versionBean) {
-        CmdExecuteHelper mCmdExecuteHelper = new CmdExecuteHelper();
+        CmdExecuter cmdExecuter = new CmdExecuter();
         CmdBean[] cmd = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/wstechapi"),
                 new CmdBean(GRADLE + " clean "),
                 new CmdBean(GRADLE + " assembleRelease"),
         };
-        int i = mCmdExecuteHelper.executeCmdAdv(cmd);
+        int i = cmdExecuter.executeCmdAdv(cmd);
         if (i != 0) {
             return;
         }
@@ -461,13 +461,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         }
 
         // 打包apk
-        CmdExecuteHelper mCmdExecuteHelper = new CmdExecuteHelper();
+        CmdExecuter cmdExecuter = new CmdExecuter();
         CmdBean[] cmd = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
                 new CmdBean(GRADLE + " clean "),
                 new CmdBean(GRADLE + " assembleDebug"),
         };
-        int i = mCmdExecuteHelper.executeCmdAdv(cmd);
+        int i = cmdExecuter.executeCmdAdv(cmd);
         if (i != 0) {
             MyLog.e(TAG, "打包测试apk失败！");
             return ;
@@ -475,13 +475,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
 
         String apk = STAND_SDK_PROJECT_PATH + "/app/build/outputs/apk/debug/app-debug.apk";
         // 执行apk
-        CmdExecuteHelper mCmdExecuteHelper2 = new CmdExecuteHelper();
+        CmdExecuter cmdExecuter2 = new CmdExecuter();
         CmdBean[] cmd2 = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
                 new CmdBean("adb uninstall com.tttrtclive.test"),
                 new CmdBean("adb install " + apk),
         };
-        int i2 = mCmdExecuteHelper2.executeCmdAdv(cmd2);
+        int i2 = cmdExecuter2.executeCmdAdv(cmd2);
         if (i2 != 0) {
             MyLog.e(TAG, "安装测试apk失败！");
         }

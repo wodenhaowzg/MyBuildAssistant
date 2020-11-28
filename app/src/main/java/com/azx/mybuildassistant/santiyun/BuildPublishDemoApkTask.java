@@ -2,7 +2,7 @@ package com.azx.mybuildassistant.santiyun;
 
 import com.azx.mybuildassistant.bean.CmdBean;
 import com.azx.mybuildassistant.santiyun.bean.PublishDemoBean;
-import com.azx.mybuildassistant.utils.CmdExecuteHelper;
+import com.azx.mybuildassistant.utils.CmdExecuter;
 import com.azx.mybuildassistant.utils.MyLog;
 
 import java.io.File;
@@ -52,49 +52,49 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask {
     @Override
     public int start() {
         for (int buildApk : buildApks) {
-            CmdExecuteHelper mCmdExecuteHelper;
+            CmdExecuter cmdExecuter;
             switch (buildApk) {
                 case DEMO_STAND_TEST:
-                    mCmdExecuteHelper = new CmdExecuteHelper();
+                    cmdExecuter = new CmdExecuter();
                     PublishDemoBean stand_sdk_bean = new PublishDemoBean(STAND_SDK_APP_PROJECT_PATH, STAND_SDK_APP_PROJECT_OUTPUT_APK_PATH, APK_SRC_NAME, STAND_SDK_APP_PROJECT_APK_TARGET_NAME);
                     CmdBean[] cmdBeans5 = buildCmd(stand_sdk_bean);
-                    mCmdExecuteHelper.executeCmdAdv(cmdBeans5);
+                    cmdExecuter.executeCmdAdv(cmdBeans5);
                     break;
                 case DEMO_ENTER_ROOM_TEST:
-                    mCmdExecuteHelper = new CmdExecuteHelper();
+                    cmdExecuter = new CmdExecuter();
                     PublishDemoBean test_sdk_bean = new PublishDemoBean(TEST_SDK_PROJECT_PATH, TEST_SDK_PROJECT_OUTPUT_APK_PATH, APK_SRC_NAME, TEST_SDK_PROJECT_APK_TARGET_NAME);
                     CmdBean[] cmdBeans4 = buildCmd(test_sdk_bean);
-                    mCmdExecuteHelper.executeCmdAdv(cmdBeans4);
+                    cmdExecuter.executeCmdAdv(cmdBeans4);
                     break;
                 case DEMO_LIVE_CHAT:
                     String live_des_dir = LIVE_PROJECT_PATH + "/libs";
                     if (!deleteOldSdkFile(live_des_dir)) return 0;
                     if (!copySdkFile(SDK_CACHE, live_des_dir)) return 0;
 
-                    mCmdExecuteHelper = new CmdExecuteHelper();
+                    cmdExecuter = new CmdExecuter();
                     PublishDemoBean live_bean = new PublishDemoBean(LIVE_PROJECT_PATH, LIVE_OUTPUT_APK_PATH, APK_SRC_NAME, LIVE_APK_TARGET_NAME);
                     CmdBean[] cmdBeans = buildCmd(live_bean);
-                    mCmdExecuteHelper.executeCmdAdv(cmdBeans);
+                    cmdExecuter.executeCmdAdv(cmdBeans);
                     break;
                 case DEMO_VIDEO_CHAT:
                     String video_des_dir = VIDEO_CHAT_PROJECT_PATH + "/libs";
                     if (!deleteOldSdkFile(video_des_dir)) return 0;
                     if (!copySdkFile(SDK_CACHE, video_des_dir)) return 0;
 
-                    mCmdExecuteHelper = new CmdExecuteHelper();
+                    cmdExecuter = new CmdExecuter();
                     PublishDemoBean video_chat_bean = new PublishDemoBean(VIDEO_CHAT_PROJECT_PATH, VIDEO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, VIDEO_CHAT_APK_TARGET_NAME);
                     CmdBean[] cmdBeans2 = buildCmd(video_chat_bean);
-                    mCmdExecuteHelper.executeCmdAdv(cmdBeans2);
+                    cmdExecuter.executeCmdAdv(cmdBeans2);
                     break;
                 case DEMO_AUDIO_CHAT:
                     String audio_des_dir = AUDIO_CHAT_PROJECT_PATH + "/libs";
                     if (!deleteOldSdkFile(audio_des_dir)) return 0;
                     if (!copySdkFile(SDK_VOICE_CACHE, audio_des_dir)) return 0;
 
-                    mCmdExecuteHelper = new CmdExecuteHelper();
+                    cmdExecuter = new CmdExecuter();
                     PublishDemoBean audio_chat_bean = new PublishDemoBean(AUDIO_CHAT_PROJECT_PATH, AUDIO_CHAT_OUTPUT_APK_PATH, APK_SRC_NAME, AIDEO_CHAT_APK_TARGET_NAME);
                     CmdBean[] cmdBeans3 = buildCmd(audio_chat_bean);
-                    mCmdExecuteHelper.executeCmdAdv(cmdBeans3);
+                    cmdExecuter.executeCmdAdv(cmdBeans3);
                     break;
             }
         }
