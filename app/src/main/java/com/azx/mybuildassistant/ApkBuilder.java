@@ -8,9 +8,9 @@ import com.azx.mybuildassistant.utils.MyLog;
 import java.io.File;
 
 class ApkBuilder {
-
     private static final String STAND_SDK_PROJECT_PATH = "/Users/zanewang/Downloads/WorkSpace/Company/Santiyun/Code/SDK/Demo/android/WS_ANDROID_MOMODemo";
-    private static final String APK_OUTPUT = STAND_SDK_PROJECT_PATH + "/app/build/outputs/apk/debug";
+    private static final String APK_OUTPUT = STAND_SDK_PROJECT_PATH + "app/build/outputs/apk/release";
+    private static final String APK_NAME = STAND_SDK_PROJECT_PATH + "app-release.apk";
     private static final String GRADLE = "/Users/zanewang/.gradle/wrapper/dists/gradle-6.5-bin/6nifqtx7604sqp1q6g8wikw7p/gradle-6.5/bin/gradle";
     private static final String TAG = "ApkBuilder";
 
@@ -34,14 +34,14 @@ class ApkBuilder {
         CmdBean[] cmd = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
                 new CmdBean(GRADLE + " clean "),
-                new CmdBean(GRADLE + " assembleDebug"),
+                new CmdBean(GRADLE + " assembleRelease"),
         };
         int i = cmdExecuter.executeCmdAdv(cmd);
         if (i != 0) {
             MyLog.e(TAG, "打包测试apk失败！");
         }
-        // 改名并移动至download文件夹
-        File tempSaveFile = new File(apkPath);
-        MyFileUtils.moveFile()
+//        // 改名并移动至download文件夹
+//        File tempSaveFile = new File(apkPath);
+//        MyFileUtils.moveFile()
     }
 }
