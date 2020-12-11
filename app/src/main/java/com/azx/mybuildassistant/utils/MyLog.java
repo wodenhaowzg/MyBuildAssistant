@@ -11,6 +11,11 @@ public class MyLog {
         System.out.println(format + " D/" + tag + " : " + msg);
     }
 
+    public static void w(String tag, String msg) {
+        String format = dateFormat.format(System.currentTimeMillis());
+        System.out.println("\033[34;43;4m" + format + " W/" + tag + " : " + msg + "\033[0m");
+    }
+
     public static void e(String tag, String msg) {
         String format = dateFormat.format(System.currentTimeMillis());
         System.out.println("\033[31;4m" + format + " E/" + tag + " : " + msg + "\033[0m");
