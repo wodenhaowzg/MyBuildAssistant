@@ -26,7 +26,7 @@ class ApkBuilder {
     private static final String SFTP_SERVER_BASE_DES_DIR_PATH = "/admin_android/android";
         private static final String SFTP_SERVER_DIR_PATH = "version_update";
 //    private static final String SFTP_SERVER_DIR_PATH = "version_update_test";
-    private static final String SFTP_SERVER_FILE_NAME = "测试-连麦直播(11).apk";
+    private static final String SFTP_SERVER_FILE_NAME = "测试-连麦直播(12).apk";
 
     public void start() {
 //        CmdExecuteHelper executer = new CmdExecuteHelper();
