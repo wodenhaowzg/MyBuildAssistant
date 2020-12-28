@@ -52,8 +52,6 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
 //        }
 
         buildPublishSdk(new int[]{VersionSelect.STAND_HWL});
-//        executeTestApk("3T_Native_SDK_for_Android_V2.9.6_Full_2020_05_15.aar");
-
 //         出异常情况恢复代码
 //        restoreForFailed();
         return 0;
@@ -124,10 +122,11 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
             String finallyFilePath = desAarFile.getAbsolutePath();
             executeBuild(finallyFilePath, buildStandSdkVersionSelect, versionBean);
             restoreStatus(versionBean);
+            unZipSDKFile(finallyFilePath);
         }
     }
 
-    private void unZipFile(String finallyFilePath) {
+    private void unZipSDKFile(String finallyFilePath) {
         new Thread(() -> {
             MyLog.d(TAG, "finallyFilePath : " + finallyFilePath);
             File file = new File(finallyFilePath);
@@ -182,7 +181,27 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
                 e.printStackTrace();
             }
             zipFile.delete();
+            // 移动目标文件
+            moveTargetSDKFile();
         }).start();
+    }
+
+    // /Users/zanewang/Downloads/WorkSpace/Company/Santiyun/Code/TTTRtcEngine_AndroidKit/temp/classes.jar
+    // /Users/zanewang/Downloads/WorkSpace/Company/Santiyun/Code/TTTRtcEngine_AndroidKit/temp/jni/armeabi-v7a
+    // /Users/zanewang/Downloads/WorkSpace/Company/Santiyun/Code/TTTRtcEngine_AndroidKit/temp/jni/arm64-v8a
+    // /Users/zanewang/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/libs
+    private void moveTargetSDKFile() {
+        String srcDirPath = SANTIYUN_CODE_PATH + File.separator + "TTTRtcEngine_AndroidKit" + File.separator + "temp";
+        String desDirPath = MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/libs";  // FIXME HARD CODE
+        String srcJarFileName = "/classes.jar";
+        String[] srcSoFiles = new String[]{"libAudioDecoder.so", "libavrecoder.so", "libclientcore.so", "libcodec_ttt.so", "libDenoise.so", "libmyaudio_so.so", "libyuv_ttt.so"};
+        String srcV7SoDir = "/armeabi-v7a";
+        String srcV8SoDir = "/arm64-v8a";
+        MyFileUtils.moveFile(srcDirPath + srcJarFileName, desDirPath + srcJarFileName);
+        for (String srcSoFile : srcSoFiles) {
+            MyFileUtils.moveFile(srcDirPath + File.separator + "jni" + srcV7SoDir + File.separator + srcSoFile, desDirPath + srcV7SoDir + File.separator + srcSoFile);
+            MyFileUtils.moveFile(srcDirPath + File.separator + "jni" + srcV8SoDir + File.separator + srcSoFile, desDirPath + srcV8SoDir + File.separator + srcSoFile);
+        }
     }
 
     private String buildTargetAarName(VersionSelect.VersionBean bean) {
@@ -294,13 +313,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     }
 
     private void executeBuild(String finallyFilePath, VersionSelect versionSelect, VersionSelect.VersionBean versionBean) {
-        CmdExecuter cmdExecuter = new CmdExecuter();
+        CmdExecuter mCmdExecuter = new CmdExecuter();
         CmdBean[] cmd = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/wstechapi"),
                 new CmdBean(GRADLE + " clean "),
-                new CmdBean(GRADLE + " assembleRelease"),
+                new CmdBean(GRADLE + " assembleDebug"),
         };
-        int i = cmdExecuter.executeCmdAdv(cmd);
+        int i = mCmdExecuter.executeCmdAdv(cmd);
         if (i != 0) {
             return;
         }
@@ -461,13 +480,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         }
 
         // 打包apk
-        CmdExecuter cmdExecuter = new CmdExecuter();
+        CmdExecuter mCmdExecuter = new CmdExecuter();
         CmdBean[] cmd = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
                 new CmdBean(GRADLE + " clean "),
                 new CmdBean(GRADLE + " assembleDebug"),
         };
-        int i = cmdExecuter.executeCmdAdv(cmd);
+        int i = mCmdExecuter.executeCmdAdv(cmd);
         if (i != 0) {
             MyLog.e(TAG, "打包测试apk失败！");
             return ;
@@ -475,13 +494,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
 
         String apk = STAND_SDK_PROJECT_PATH + "/app/build/outputs/apk/debug/app-debug.apk";
         // 执行apk
-        CmdExecuter cmdExecuter2 = new CmdExecuter();
+        CmdExecuter mCmdExecuter2 = new CmdExecuter();
         CmdBean[] cmd2 = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
                 new CmdBean("adb uninstall com.tttrtclive.test"),
                 new CmdBean("adb install " + apk),
         };
-        int i2 = cmdExecuter2.executeCmdAdv(cmd2);
+        int i2 = mCmdExecuter2.executeCmdAdv(cmd2);
         if (i2 != 0) {
             MyLog.e(TAG, "安装测试apk失败！");
         }

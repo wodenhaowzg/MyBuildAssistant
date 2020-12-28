@@ -6,7 +6,7 @@ import java.io.File;
 
 public abstract class BuildBaseTask extends SanTiYunBaseTask {
 
-    static final String AAR_SRC = "/wstechapi-release.aar";
+    static final String AAR_SRC = "/wstechapi-debug.aar";
 
     // STAND
     static String globalConfigFileName = File.separator + "GlobalConfig.java";
@@ -50,8 +50,8 @@ public abstract class BuildBaseTask extends SanTiYunBaseTask {
     final String wstech_embed_screen = "embed project(path: ':myandroidscreenrecordandcrop', configuration:'default')";
     final String wstech_embed_myvideoimprove = "embed project(path: ':myvideoimprove', configuration:'default')";
 
-    final String wstech_ijk_java = "api(name: 'ijkplayer_java', ext: 'aar')";
-    final String wstech_ijk_exo = "api(name: 'ijkplayer_exo', ext: 'aar')";
-    protected final String wstech_embed_ijk_java = "embed (name:'ijkplayer_java'";
-    protected final String wstech_embed_ijk_exo = "embed (name:'ijkplayer_exo'";
+    final String wstech_ijk_java = "api project(':wsijkplayer_java')";
+    final String wstech_ijk_exo = "api project(':wsijkplayer_exo')";
+    protected final String wstech_embed_ijk_java = "embed project(path: ':wsijkplayer_java', configuration:'default')";
+    protected final String wstech_embed_ijk_exo = "embed project(path: ':wsijkplayer_exo', configuration:'default')";
 }

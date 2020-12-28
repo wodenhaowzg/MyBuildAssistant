@@ -14,9 +14,6 @@ public class MainClass {
 //        ExtractExposedObjectTask task = new ExtractExposedObjectTask();
 //        task.start();
 
-//        BuildStandSdkTask task = new BuildStandSdkTask();
-//        task.start();
-////
 //        BuildPublishDemoApkTask sdk = new BuildPublishDemoApkTask();
 //        sdk.start();
 

@@ -11,8 +11,8 @@ public class IjkModule extends BaseModule {
     private static final String IJK_MODULE_FFMPEG_SO = "/libijkffmpeg_ttt.so";
     private static final String IJK_MODULE_PLAYER_SO = "/libijkplayer_ttt.so";
     private static final String IJK_MODULE_SDL_SO = "/libijksdl_ttt.so";
-    private static final String IJK_MODULE_JAVA_AAR = "/ijkplayer_java.aar";
-    private static final String IJK_MODULE_EXO_AAR = "/ijkplayer_exo.aar";
+//    private static final String IJK_MODULE_JAVA_AAR = "/ijkplayer_java.aar";
+//    private static final String IJK_MODULE_EXO_AAR = "/ijkplayer_exo.aar";
     private static final String IJK_MODULE_JAVA_FILE = "/TTTRtcIjkModule.java";
     private static final String IJK_MODULE_JAVA_FILE_PATH = WSTECHAPI_MODULE_PATH + "/src/main/java/com/wushuangtech/wstechapi/internal" + IJK_MODULE_JAVA_FILE;
 
@@ -73,16 +73,16 @@ public class IjkModule extends BaseModule {
                 return false;
             }
         }
-        boolean b6 = MyFileUtils.moveFile(LIB + IJK_MODULE_JAVA_AAR, TEMP_SAVE + IJK_MODULE_JAVA_AAR);
-        if (!b6) {
-            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_JAVA_AAR 文件失败！");
-            return false;
-        }
-        boolean b7 = MyFileUtils.moveFile(LIB + IJK_MODULE_EXO_AAR, TEMP_SAVE + IJK_MODULE_EXO_AAR);
-        if (!b7) {
-            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_EXO_AAR 文件失败！");
-            return false;
-        }
+//        boolean b6 = MyFileUtils.moveFile(LIB + IJK_MODULE_JAVA_AAR, TEMP_SAVE + IJK_MODULE_JAVA_AAR);
+//        if (!b6) {
+//            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_JAVA_AAR 文件失败！");
+//            return false;
+//        }
+//        boolean b7 = MyFileUtils.moveFile(LIB + IJK_MODULE_EXO_AAR, TEMP_SAVE + IJK_MODULE_EXO_AAR);
+//        if (!b7) {
+//            MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_EXO_AAR 文件失败！");
+//            return false;
+//        }
         boolean b8 = MyFileUtils.moveFile(IJK_MODULE_JAVA_FILE_PATH, TEMP_SAVE + IJK_MODULE_JAVA_FILE);
         if (!b8) {
             MyLog.error(TAG, "handleIjkModule -> 移动 IJK_MODULE_JAVA_FILE 文件失败！");
@@ -168,8 +168,8 @@ public class IjkModule extends BaseModule {
             MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_FFMPEG_SO, LIB_ARMEABI_V7_PATH + IJK_MODULE_FFMPEG_SO);
             MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_PLAYER_SO, LIB_ARMEABI_V7_PATH + IJK_MODULE_PLAYER_SO);
             MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + IJK_MODULE_SDL_SO, LIB_ARMEABI_V7_PATH + IJK_MODULE_SDL_SO);
-            MyFileUtils.moveFile(TEMP_SAVE + IJK_MODULE_JAVA_AAR, LIB + IJK_MODULE_JAVA_AAR);
-            MyFileUtils.moveFile(TEMP_SAVE + IJK_MODULE_EXO_AAR, LIB + IJK_MODULE_EXO_AAR);
+//            MyFileUtils.moveFile(TEMP_SAVE + IJK_MODULE_JAVA_AAR, LIB + IJK_MODULE_JAVA_AAR);
+//            MyFileUtils.moveFile(TEMP_SAVE + IJK_MODULE_EXO_AAR, LIB + IJK_MODULE_EXO_AAR);
             if (versionBean.v8Module) {
                 MyFileUtils.moveFile(TEMP_SAVE + LIB_ARM64_V8 + IJK_MODULE_FFMPEG_SO, LIB_ARM64_V8_PATH + IJK_MODULE_FFMPEG_SO);
                 MyFileUtils.moveFile(TEMP_SAVE + LIB_ARM64_V8 + IJK_MODULE_PLAYER_SO, LIB_ARM64_V8_PATH + IJK_MODULE_PLAYER_SO);

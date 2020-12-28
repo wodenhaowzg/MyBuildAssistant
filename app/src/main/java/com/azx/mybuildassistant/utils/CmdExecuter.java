@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 
 public class CmdExecuter {
 
-    private static final String TEMP_FILE = Constants.COMMON_FILE_PATH_PREFIX + "/temp/execute.sh";
+    private static final String TEMP_FILE = Constants.OWNER_PROJECT_PATH + "/temp/execute.sh";
     private static final String TAG = CmdExecuter.class.getSimpleName();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private OnProcessOutputContent onProcessOutputContent;

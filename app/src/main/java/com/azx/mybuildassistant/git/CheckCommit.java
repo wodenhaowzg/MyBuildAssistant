@@ -11,17 +11,17 @@ import java.util.List;
 
 public class CheckCommit implements CmdExecuter.OnProcessOutputContentWithTag {
 
-    private static final String GIT_NEWEST = "Your branch is up to date";
     private static final String TAG = CheckCommit.class.getSimpleName();
-    private String[] mGitPaths = new String[]{
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyAlgorithm",
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyAndroidFourComponents",
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyAndroidTest",
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyBuildAssistant",
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyFirstGroovyProject",
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyHttpTest",
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyRxJava",
-            Constants.MYGITHUB_FILE_DIR_PATH + File.separator + "Android" + File.separator + "MyUIProject",
+    private static final String GIT_NEWEST = "Your branch is up to date";
+    private static final String[] PROJECT_PATH = new String[]{
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyAlgorithm",
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyAndroidFourComponents",
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyAndroidTest",
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyBuildAssistant",
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyFirstGroovyProject",
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyHttpTest",
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyRxJava",
+            Constants.GITHUB_PATH + File.separator + "Android" + File.separator + "MyUIProject",
     };
     private String mCurrentGitPath;
     private List<String> mNoNeedCommit = new ArrayList<>();
@@ -29,7 +29,7 @@ public class CheckCommit implements CmdExecuter.OnProcessOutputContentWithTag {
     public void start() {
         CmdExecuter cmdExecuter = new CmdExecuter();
         cmdExecuter.setOnProcessOutputContentWithTag(this);
-        for (String path : mGitPaths) {
+        for (String path : PROJECT_PATH) {
             mCurrentGitPath = path;
             CmdBean[] cmd = new CmdBean[]{
                     new CmdBean("cd " + path),
@@ -40,7 +40,7 @@ public class CheckCommit implements CmdExecuter.OnProcessOutputContentWithTag {
         }
 
         List<String> needCommit = new ArrayList<>();
-        for (String gitPath : mGitPaths) {
+        for (String gitPath : PROJECT_PATH) {
             if (!mNoNeedCommit.contains(gitPath)) {
                 needCommit.add(gitPath);
             }

@@ -9,8 +9,10 @@ public abstract class SanTiYunBaseTask extends BaseTask {
             "WorkSpace" + File.separator +
             "Company" + File.separator +
             "Santiyun" + File.separator;
+
+    protected static final String SANTIYUN_CODE_PATH = SANTIYUN_PATH + File.separator + "Code";
     // 三体云 SDK 路径
-    private static final String SANTIYUN_SDK_PATH = SANTIYUN_PATH + File.separator + "Code" + File.separator + "SDK";
+    private static final String SANTIYUN_SDK_PATH = SANTIYUN_CODE_PATH + File.separator + "SDK";
     // 三体云 SDK DEMO 路径
     private static final String SANTIYUN_SDK_DEMO_PATH = SANTIYUN_SDK_PATH + File.separator + "Demo" + File.separator + "android";
 

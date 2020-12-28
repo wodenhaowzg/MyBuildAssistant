@@ -8,15 +8,30 @@ public class Constants {
             "Users" + File.separator +
             "zanewang"; // zanewang or wangzhiguo
 
-    public static final String COMMON_FILE_PATH_PREFIX = MACHINE_PATH + File.separator +
+
+    public static final String GITHUB_PATH = MACHINE_PATH + File.separator +
+            "Downloads" + File.separator +
+            "WorkSpace" + File.separator +
+            "MyGithub" ;
+
+    public static final String PROJECT_NAME = File.separator + "MyBuildAssistant";
+
+    public static final String OWNER_PROJECT_PATH = MACHINE_PATH + File.separator +
             "Downloads" + File.separator +
             "WorkSpace" + File.separator +
             "MyGithub" + File.separator +
             "MyBuildAssistant";
 
-
-    public static final String MYGITHUB_FILE_DIR_PATH = MACHINE_PATH + File.separator +
-            "Downloads" + File.separator +
-            "WorkSpace" + File.separator +
-            "MyGithub";
+    /**
+     * Gradle 命令所在文件夹的绝对路径
+     */
+    public static final String GRADLE = MACHINE_PATH + File.separator +
+            ".gradle" + File.separator +
+            "wrapper" + File.separator +
+            "dists" + File.separator +
+            "gradle-6.5-bin" + File.separator +
+            "6nifqtx7604sqp1q6g8wikw7p" + File.separator +
+            "gradle-6.5" + File.separator +
+            "bin" + File.separator +
+            "gradle";
 }
