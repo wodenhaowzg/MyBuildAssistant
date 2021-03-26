@@ -22,8 +22,11 @@ public class MainClass {
 //        AdbConnecter adbConnecter = new AdbConnecter();
 //        adbConnecter.startConnect();
 
-        ApkBuilder apkBuilder = new ApkBuilder();
-        apkBuilder.start();
+//        ApkBuilder apkBuilder = new ApkBuilder();
+//        apkBuilder.start();
+
+        BuildStandSdkTask buildStandSdkTask = new BuildStandSdkTask();
+        buildStandSdkTask.start();
     }
 
     private static void exePublish() {

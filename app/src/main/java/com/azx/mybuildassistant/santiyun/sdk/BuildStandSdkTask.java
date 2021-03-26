@@ -52,6 +52,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
 //        }
 
         buildPublishSdk(new int[]{VersionSelect.STAND_HWL});
+//        buildPublishSdk(new int[]{VersionSelect.CUSTOM_TY});
 //         出异常情况恢复代码
 //        restoreForFailed();
         return 0;
@@ -192,7 +193,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     // /Users/zanewang/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/libs
     private void moveTargetSDKFile() {
         String srcDirPath = SANTIYUN_CODE_PATH + File.separator + "TTTRtcEngine_AndroidKit" + File.separator + "temp";
-        String desDirPath = MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/libs";  // FIXME HARD CODE
+        String desDirPath = MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/sdk_folder/core";  // FIXME HARD CODE
         String srcJarFileName = "/classes.jar";
         String[] srcSoFiles = new String[]{"libAudioDecoder.so", "libavrecoder.so", "libclientcore.so", "libcodec_ttt.so", "libDenoise.so", "libmyaudio_so.so", "libyuv_ttt.so"};
         String srcV7SoDir = "/armeabi-v7a";
@@ -387,13 +388,13 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     }
 
     private boolean handleOtherModule(VersionSelect.VersionBean versionBean) {
-        if (!versionBean.unityModule) {
-            boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + UNITY_MODULE_SO, TEMP_SAVE + LIB_ARMEABI_V7 + UNITY_MODULE_SO);
-            if (!b) {
-                MyLog.error(TAG, "handleOtherModule -> 移动 UNITY_MODULE_SO 文件失败！");
-                return false;
-            }
-        }
+//        if (!versionBean.unityModule) {
+//            boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + UNITY_MODULE_SO, TEMP_SAVE + LIB_ARMEABI_V7 + UNITY_MODULE_SO);
+//            if (!b) {
+//                MyLog.error(TAG, "handleOtherModule -> 移动 UNITY_MODULE_SO 文件失败！");
+//                return false;
+//            }
+//        }
 
         if (!versionBean.audioEffect) {
             boolean b = MyFileUtils.moveFile(LIB_ARMEABI_V7_PATH + AUDIO_EFFECT_MODULE_SO, TEMP_SAVE + LIB_ARMEABI_V7 + AUDIO_EFFECT_MODULE_SO);
@@ -413,9 +414,9 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     }
 
     private void restoreStatus(VersionSelect.VersionBean versionBean) {
-        if (!versionBean.unityModule) {
-            MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + UNITY_MODULE_SO, LIB_ARMEABI_V7_PATH + UNITY_MODULE_SO);
-        }
+//        if (!versionBean.unityModule) {
+//            MyFileUtils.moveFile(TEMP_SAVE + LIB_ARMEABI_V7 + UNITY_MODULE_SO, LIB_ARMEABI_V7_PATH + UNITY_MODULE_SO);
+//        }
 
         if (!versionBean.audioEffect) {
             restoreV7MoveFile(AUDIO_EFFECT_MODULE_SO);

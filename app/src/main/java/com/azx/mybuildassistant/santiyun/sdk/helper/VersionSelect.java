@@ -3,6 +3,8 @@ package com.azx.mybuildassistant.santiyun.sdk.helper;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
 
+import java.io.File;
+
 import static com.azx.mybuildassistant.santiyun.sdk.BuildBaseTask.screenMainifestFilePath;
 
 public class VersionSelect {
@@ -13,12 +15,10 @@ public class VersionSelect {
     public static final int STAND_FULL_V7_SDK = 2;
     public static final int STAND_VOICE_V8_SDK = 3;
     public static final int STAND_VOICE_V7_SDK = 4;
-    public static final int STAND_HWL = 5;
     public static final int STAND_SDK_REMOVE_AUDIO_EFFECT_IJK = 6;
 
-    //    public static final int NORMAL_FULL_V7_SDK = 50;
-    public static final int XIAOYUN_SDK = 100; // 淆云
-    public static final int CUSTOM_TY = 202; // 太岳
+    public static final int STAND_HWL = 100;
+    public static final int CUSTOM_TY = 101; // 太岳
 //    public static final int CUSTOM_YQ = 200; // 椰趣
 //    public static final int CUSTOM_TC = 201; // 同创
 //    public static final int CUSTOM_LY = 203; // 龙羽
@@ -59,11 +59,6 @@ public class VersionSelect {
                 bean.videoModule = true;
                 bean.rtmpModule = true;
                 break;
-            case XIAOYUN_SDK:
-                bean.videoModule = true;
-                bean.rtmpModule = true;
-                bean.ijkModule = true;
-                break;
         }
         return bean;
     }
@@ -71,7 +66,7 @@ public class VersionSelect {
     public boolean changeBranchTag(String filePath, String branchTag) {
         boolean b6 = MyFileUtils.modifyFileContent(filePath, line -> {
             if (line.contains(branchTag)) {
-                if (version == XIAOYUN_SDK || version == CUSTOM_TY) {
+                if (version == CUSTOM_TY) {
                     modifyScreenMainifest();
                 }
             }
@@ -94,6 +89,10 @@ public class VersionSelect {
             "\t</application>";
 
     private void modifyScreenMainifest() {
+        File file = new File(screenMainifestFilePath);
+        if (!file.exists()) {
+            return;
+        }
         MyFileUtils.modifyFileContent(screenMainifestFilePath, line -> {
             if (line.contains("FOREGROUND_SERVICE")) {
                 count = 5;

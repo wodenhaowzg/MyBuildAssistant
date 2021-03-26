@@ -5,10 +5,15 @@ import java.io.File;
 public abstract class SanTiYunBaseTask extends BaseTask {
 
     // 三体云代码仓库路径
+//    protected static final String SANTIYUN_PATH = MACHINE_PATH + File.separator + "Downloads" + File.separator +
+//            "WorkSpace" + File.separator +
+//            "Company" + File.separator +
+//            "Santiyun" + File.separator;
+
     protected static final String SANTIYUN_PATH = MACHINE_PATH + File.separator + "Downloads" + File.separator +
             "WorkSpace" + File.separator +
             "Company" + File.separator +
-            "Santiyun" + File.separator;
+            "TAL";
 
     protected static final String SANTIYUN_CODE_PATH = SANTIYUN_PATH + File.separator + "Code";
     // 三体云 SDK 路径
@@ -17,7 +22,8 @@ public abstract class SanTiYunBaseTask extends BaseTask {
     private static final String SANTIYUN_SDK_DEMO_PATH = SANTIYUN_SDK_PATH + File.separator + "Demo" + File.separator + "android";
 
     // SDK 工程路径
-    protected static final String STAND_SDK_PROJECT_PATH = SANTIYUN_SDK_DEMO_PATH + File.separator + "WS_ANDROID_MOMODemo";
+//    protected static final String STAND_SDK_PROJECT_PATH = SANTIYUN_SDK_DEMO_PATH + File.separator + "WS_ANDROID_MOMODemo";
+    protected static final String STAND_SDK_PROJECT_PATH = SANTIYUN_PATH + File.separator + "corertc-android";
     // MOMO 使用的 SDK 工程路径
     protected static final String OLD_SDK_PROJECT_PATH = SANTIYUN_SDK_DEMO_PATH + File.separator + "WS_ANDROID_DEMO";
     // 全民分支使用的 SDK 工程路径
@@ -33,7 +39,7 @@ public abstract class SanTiYunBaseTask extends BaseTask {
     protected static final String MYAUDIO_MODULE_PATH = OLD_SDK_PROJECT_PATH + File.separator + MYAUDIO_MODULE_NAME;
     // SDK 中的 myvideo 模块
     protected static final String MYVIDEO_MODULE_NAME = "myvideo";
-    protected static final String MYVIDEO_MODULE_PATH = OLD_SDK_PROJECT_PATH + File.separator + MYVIDEO_MODULE_NAME;
+    protected static final String MYVIDEO_MODULE_PATH = STAND_SDK_PROJECT_PATH + File.separator + MYVIDEO_MODULE_NAME;
     // SDK 中的 wstechapi 模块
     private static final String WSTECHAPI_MODULE_NAME = "wstechapi";
     protected static final String WSTECHAPI_MODULE_PATH = STAND_SDK_PROJECT_PATH + File.separator + WSTECHAPI_MODULE_NAME;

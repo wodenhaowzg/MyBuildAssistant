@@ -44,7 +44,7 @@ class ApkBuilder {
     private static final String SFTP_SERVER_DIR_PATH = "version_update";
 
     //        private static final String SFTP_SERVER_DIR_PATH = "version_update_test";
-    private static final String SFTP_SERVER_FILE_NAME = "测试-连麦直播(25).apk";
+    private static final String SFTP_SERVER_FILE_NAME = "测试-连麦直播(29).apk";
 
     public void start() {
         packTestFullDemo();
