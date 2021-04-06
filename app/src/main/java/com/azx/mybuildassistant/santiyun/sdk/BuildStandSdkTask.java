@@ -24,8 +24,8 @@ import java.util.List;
  */
 public class BuildStandSdkTask extends BuildBaseTaskImpl {
 
-    private static final String AAR_SAVE_PATH = SANTIYUN_PATH + "/Code/TTTRtcEngine_AndroidKit";
-    private static final String SDK_CACHE_PATH = SANTIYUN_PATH + "/Code/TTTRtcEngine_AndroidKit/SDK_CACHE";
+    private static final String AAR_SAVE_PATH = SANTIYUN_CODE_PATH + "/TTTRtcEngine_AndroidKit";
+    private static final String SDK_CACHE_PATH = SANTIYUN_CODE_PATH + "/TTTRtcEngine_AndroidKit/SDK_CACHE";
 
     public static String SDK_CACHE_FILE;
     public static String SDK_CACHE_VOICE_FILE;
@@ -193,7 +193,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     // /Users/zanewang/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/libs
     private void moveTargetSDKFile() {
         String srcDirPath = SANTIYUN_CODE_PATH + File.separator + "TTTRtcEngine_AndroidKit" + File.separator + "temp";
-        String desDirPath = MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/sdk_folder/core";  // FIXME HARD CODE
+        String desDirPath = MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/xrtc_publish_android_release/sdk_folder/core";  // FIXME HARD CODE
         String srcJarFileName = "/classes.jar";
         String[] srcSoFiles = new String[]{"libAudioDecoder.so", "libavrecoder.so", "libclientcore.so", "libcodec_ttt.so", "libDenoise.so", "libmyaudio_so.so", "libyuv_ttt.so"};
         String srcV7SoDir = "/armeabi-v7a";
@@ -209,7 +209,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         String name;
         String sdk_version_number = MyFileUtils.getStrFromVariable(globalConfigFilePath, "SDK_VERSION_NUMBER");
         if (sdk_version_number == null) {
-            MyLog.error(TAG, "在GlobalConfig文件中，未找到变量 SDK_VERSION_NUMBER，请检查！");
+            MyLog.error(TAG, "在GlobalConfig文件中，未找到变量 SDK_VERSION_NUMBER，请检查！" + globalConfigFilePath);
             return null;
         }
 
@@ -444,7 +444,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     }
 
     private void executeTestApk(String srcFileName){
-        String srcPath = "/Users/wangzhiguo/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit/" + srcFileName;
+        String srcPath = "/Users/wangzhiguo/Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit/" + srcFileName; // FIXME hard code
         String desPath = STAND_SDK_PROJECT_PATH + "/app/libs/" + srcFileName;
         String buildFile = "build.gradle";
         startTestApk(srcPath, desPath, buildFile);

@@ -12,15 +12,17 @@ public class Constants {
     public static final String GITHUB_PATH = MACHINE_PATH + File.separator +
             "Downloads" + File.separator +
             "WorkSpace" + File.separator +
-            "MyGithub" ;
+            "MyGithubs";
+
+    public static final String GITHUB_ANDROID_PATH = MACHINE_PATH + File.separator +
+            "Downloads" + File.separator +
+            "WorkSpace" + File.separator +
+            "MyGithubs" + File.separator +
+            "Android";
 
     public static final String PROJECT_NAME = File.separator + "MyBuildAssistant";
 
-    public static final String OWNER_PROJECT_PATH = MACHINE_PATH + File.separator +
-            "Downloads" + File.separator +
-            "WorkSpace" + File.separator +
-            "MyGithub" + File.separator +
-            "MyBuildAssistant";
+    public static final String OWNER_PROJECT_PATH = GITHUB_ANDROID_PATH + PROJECT_NAME;
 
     /**
      * Gradle 命令所在文件夹的绝对路径
