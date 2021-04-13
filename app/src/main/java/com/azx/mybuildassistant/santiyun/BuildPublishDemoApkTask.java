@@ -1,5 +1,6 @@
 package com.azx.mybuildassistant.santiyun;
 
+import com.azx.mybuildassistant.Constants;
 import com.azx.mybuildassistant.bean.CmdBean;
 import com.azx.mybuildassistant.santiyun.bean.PublishDemoBean;
 import com.azx.mybuildassistant.utils.CmdExecuter;
@@ -19,7 +20,7 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask {
     public static final int DEMO_AUDIO_CHAT = 4;
     public static final int DEMO_VIDEO_CHAT = 5;
 
-    private static final String COMMON_PATH = BaseTask.MACHINE_PATH + File.separator + "Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit"; // FIXME 硬编路径
+    private static final String COMMON_PATH = Constants.MACHINE_PATH + File.separator + "Desktop/Temporary-Files/SDK_Kit/TTTRtcEngine_AndroidKitWrap/TTTRtcEngine_AndroidKit"; // FIXME 硬编路径
 
     private static final String APK_OUTPUT_PATH = COMMON_PATH + File.separator + "Publish";
     public static String SDK_CACHE, SDK_VOICE_CACHE;
@@ -170,8 +171,8 @@ public class BuildPublishDemoApkTask extends SanTiYunBaseTask {
     private CmdBean[] buildCmd(PublishDemoBean bean) {
         return new CmdBean[]{
                 new CmdBean("cd " + bean.project_path),
-                new CmdBean(GRADLE + " clean"),
-                new CmdBean(GRADLE + " assembleDebug"),
+                new CmdBean(Constants.GRADLE + " clean"),
+                new CmdBean(Constants.GRADLE + " assembleDebug"),
                 new CmdBean("cp " + bean.output_apk_path + " " + APK_OUTPUT_PATH),
                 new CmdBean("mv " + APK_OUTPUT_PATH + bean.src_apk_name + " " + APK_OUTPUT_PATH + bean.target_apk_name),
         };

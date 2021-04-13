@@ -1,5 +1,8 @@
 package com.azx.mybuildassistant.santiyun;
 
+import com.azx.mybuildassistant.BaseTask;
+import com.azx.mybuildassistant.Constants;
+
 import java.io.File;
 
 public abstract class SanTiYunBaseTask extends BaseTask {
@@ -9,7 +12,7 @@ public abstract class SanTiYunBaseTask extends BaseTask {
 //            "WorkSpace" + File.separator +
 //            "Company" + File.separator +
 //            "Santiyun" + File.separator;
-    private static final String SANTIYUN_PATH = MACHINE_PATH + File.separator + "Downloads" + File.separator +
+    private static final String SANTIYUN_PATH = Constants.MACHINE_PATH + File.separator + "Downloads" + File.separator +
             "WorkSpace" + File.separator +
             "Company" + File.separator +
             "TAL";

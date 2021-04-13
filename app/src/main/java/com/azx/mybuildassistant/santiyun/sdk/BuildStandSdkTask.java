@@ -1,5 +1,6 @@
 package com.azx.mybuildassistant.santiyun.sdk;
 
+import com.azx.mybuildassistant.Constants;
 import com.azx.mybuildassistant.bean.CmdBean;
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionNumberChange;
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
@@ -193,7 +194,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
     // /Users/zanewang/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/libs
     private void moveTargetSDKFile() {
         String srcDirPath = SANTIYUN_CODE_PATH + File.separator + "TTTRtcEngine_AndroidKit" + File.separator + "temp";
-        String desDirPath = MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/xrtc_publish_android_release/sdk_folder/core";  // FIXME HARD CODE
+        String desDirPath = Constants.MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/xrtc_publish_android_release/sdk_folder/core";  // FIXME HARD CODE
         String srcJarFileName = "/classes.jar";
         String[] srcSoFiles = new String[]{"libAudioDecoder.so", "libavrecoder.so", "libclientcore.so", "libcodec_ttt.so", "libDenoise.so", "libmyaudio_so.so", "libyuv_ttt.so"};
         String srcV7SoDir = "/armeabi-v7a";
@@ -317,8 +318,8 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         CmdExecuter mCmdExecuter = new CmdExecuter();
         CmdBean[] cmd = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/wstechapi"),
-                new CmdBean(GRADLE + " clean "),
-                new CmdBean(GRADLE + " assembleDebug"),
+                new CmdBean(Constants.GRADLE + " clean "),
+                new CmdBean(Constants.GRADLE + " assembleDebug"),
         };
         int i = mCmdExecuter.executeCmdAdv(cmd);
         if (i != 0) {
@@ -484,8 +485,8 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
         CmdExecuter mCmdExecuter = new CmdExecuter();
         CmdBean[] cmd = new CmdBean[]{
                 new CmdBean("cd " + STAND_SDK_PROJECT_PATH + "/app"),
-                new CmdBean(GRADLE + " clean "),
-                new CmdBean(GRADLE + " assembleDebug"),
+                new CmdBean(Constants.GRADLE + " clean "),
+                new CmdBean(Constants.GRADLE + " assembleDebug"),
         };
         int i = mCmdExecuter.executeCmdAdv(cmd);
         if (i != 0) {

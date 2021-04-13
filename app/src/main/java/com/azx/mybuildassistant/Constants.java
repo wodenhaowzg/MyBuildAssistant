@@ -4,9 +4,27 @@ import java.io.File;
 
 public class Constants {
 
+    /**
+     * 本机用户目录绝对路径
+     */
     public static final String MACHINE_PATH = File.separator +
             "Users" + File.separator +
             "zanewang"; // zanewang or wangzhiguo
+
+    public static final String SANTIYUN_WORKSPACE = MACHINE_PATH + File.separator + "Downloads" + File.separator +
+            "WorkSpace" + File.separator +
+            "Company" + File.separator +
+            "SanTiYun" + File.separator +
+            "Code";
+
+    /**
+     * 工作空间绝对路径
+     */
+    public static final String TAL_WORKSPACE = MACHINE_PATH + File.separator + "Downloads" + File.separator +
+            "WorkSpace" + File.separator +
+            "Company" + File.separator +
+            "TAL" + File.separator +
+            "Code";
 
 
     public static final String GITHUB_PATH = MACHINE_PATH + File.separator +
