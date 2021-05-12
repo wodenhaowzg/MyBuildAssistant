@@ -13,8 +13,6 @@ public abstract class BaseTask implements Task{
 
     private final SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSS");
 
-    protected boolean DEBUG = true;
-
     @Override
     public int start() {
         return 0;

@@ -3,6 +3,7 @@ package com.azx.mybuildassistant;
 import com.azx.mybuildassistant.santiyun.BuildPublishDemoApkTask;
 import com.azx.mybuildassistant.santiyun.sdk.BuildStandSdkTask;
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
+import com.azx.mybuildassistant.sdk.ty.TYBuildTask;
 import com.azx.mybuildassistant.tal.TALBuildTask;
 
 public class MainClass {
@@ -31,6 +32,10 @@ public class MainClass {
 
         TALBuildTask buildTask = new TALBuildTask();
         buildTask.start();
+
+//        TYBuildTask buildTask = new TYBuildTask();
+//        buildTask.start();
+        System.exit(0);
     }
 
     private static void exePublish() {

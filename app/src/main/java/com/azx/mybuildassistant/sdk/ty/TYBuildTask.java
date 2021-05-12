@@ -1,4 +1,4 @@
-package com.azx.mybuildassistant.tal;
+package com.azx.mybuildassistant.sdk.ty;
 
 import com.azx.mybuildassistant.Constants;
 import com.azx.mybuildassistant.Task;
@@ -19,9 +19,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TALBuildTask implements Task {
+public class TYBuildTask implements Task {
 
-    private static final String TAG = TALBuildTask.class.getSimpleName();
+    private static final String TAG = TYBuildTask.class.getSimpleName();
     private static final String AAR_SAVE_PATH = Constants.TAL_WORKSPACE + "/TTTRtcEngine_AndroidKit";
     private static final String SDK_CACHE_PATH = Constants.TAL_WORKSPACE + "/TTTRtcEngine_AndroidKit/SDK_CACHE";
     private String AAR_OUTPUT_PATH;
@@ -34,21 +34,17 @@ public class TALBuildTask implements Task {
     private static final String GLOBAL_BRANCH_TAG = "int mBranch =";
 
     private List<BaseModule> mModuleList;
-    private String mAARPath;
     private SDKInfo mSDKInfo;
 
     @Override
     public int start() {
-        mSDKInfo = new SDKInfo(Constants.TAL_WORKSPACE + File.separator + "corertc-android");
+        mSDKInfo = new SDKInfo("/Users/zanewang/Downloads/WorkSpace/MyGithubs/Android/AV/TTT_AVSDK");
         AAR_OUTPUT_PATH = mSDKInfo.WSTECHAPI_MODULE_PATH + "/build/outputs/aar" + mSDKInfo.AAR_SRC;
 
-        boolean buildResult = startBuild(VersionSelect.STAND_HWL);
+        boolean buildResult = startBuild(VersionSelect.CUSTOM_TY);
         if (!buildResult) {
             return -1;
         }
-        // 解压 SDK 的 aar 文件，将对应的 jar 和 so 拷贝到适配层工程中
-        TALAARTask talaarTask = new TALAARTask(mAARPath);
-        talaarTask.start();
 
 //         出异常情况恢复代码
 //        restoreForFailed();
@@ -93,7 +89,6 @@ public class TALBuildTask implements Task {
         }
         executeBuild(finallyFilePath, buildStandSdkVersionSelect, versionBean);
         restoreStatus(versionBean);
-        mAARPath = finallyFilePath;
         return true;
     }
 
@@ -127,18 +122,17 @@ public class TALBuildTask implements Task {
         }
 
         String date = sdk_version_date.replaceAll("\\(", "").replaceAll("\\)", "");
-        String versionPrefix = "CoreRTC_Android_V";
         if (bean.voiceSdk) {
             if (bean.v8Module) {
-                name = versionPrefix + sdk_version_number + "_Voice_V8_" + date + ".aar";
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Voice_V8_" + date + ".aar";
             } else {
-                name = versionPrefix + sdk_version_number + "_Voice_" + date + ".aar";
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Voice_" + date + ".aar";
             }
         } else {
             if (bean.v8Module) {
-                name = versionPrefix + sdk_version_number + "_Full_V8_" + date + ".aar";
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Full_V8_" + date + ".aar";
             } else {
-                name = versionPrefix + sdk_version_number + "_Full_" + date + ".aar";
+                name = "3T_Native_SDK_for_Android_V" + sdk_version_number + "_Full_" + date + ".aar";
             }
         }
         return name;

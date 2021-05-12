@@ -30,6 +30,7 @@ public class Constants {
     public static final String GITHUB_PATH = MACHINE_PATH + File.separator +
             "Downloads" + File.separator +
             "WorkSpace" + File.separator +
+            "Android" + File.separator +
             "MyGithubs";
 
     public static final String GITHUB_ANDROID_PATH = MACHINE_PATH + File.separator +

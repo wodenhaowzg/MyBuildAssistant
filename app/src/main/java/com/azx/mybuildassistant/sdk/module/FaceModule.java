@@ -1,11 +1,11 @@
-package com.azx.mybuildassistant.santiyun.sdk.module;
+package com.azx.mybuildassistant.sdk.module;
 
 import com.azx.mybuildassistant.santiyun.sdk.helper.VersionSelect;
+import com.azx.mybuildassistant.sdk.SDKInfo;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
 
 import java.io.File;
-
 
 public class FaceModule extends BaseModule {
 
@@ -17,7 +17,7 @@ public class FaceModule extends BaseModule {
     private static final String FACE_MODULE_SO2 = File.separator + "libversa_recognize_jni.so";
 
     private static final String FACE_MODULE_JAVA_FILE_NAME = File.separator + "VersaManager.java";
-    private static final String FACE_MODULE_JAVA_FILE_PATH = MYVIDEO_MODULE_PATH + "/src/main/java/com/wushuangtech/videocore/imageprocessing/versa" + FACE_MODULE_JAVA_FILE_NAME;
+    private final String FACE_MODULE_JAVA_FILE_PATH;
 
     private static final String FACE_FLAG_VAR_OBJ = "FACE_MODULE_TAG_OBJECT";
     private static final String FACE_FLAG_FUNC_HANDLE = "FACE_MODULE_TAG_HANDLE";
@@ -29,6 +29,11 @@ public class FaceModule extends BaseModule {
     private static final String FACE_FLAG_TWO = "VersaManager.OnVersaInitListener";
     private static final String FACE_FLAG_THREE = "VersaManager.init(mContext, this);";
 
+    public FaceModule(SDKInfo sdkInfo) {
+        super(sdkInfo);
+        FACE_MODULE_JAVA_FILE_PATH = mSDKInfo.MYVIDEO_MODULE_PATH + "/src/main/java/com/wushuangtech/videocore/imageprocessing/versa" + FACE_MODULE_JAVA_FILE_NAME;
+    }
+
     @Override
     public boolean changeCodeToBuild(VersionSelect.VersionBean bean) {
         if (!bean.faceModule) {
@@ -38,25 +43,25 @@ public class FaceModule extends BaseModule {
                 return false;
             }
 
-            boolean b1 = MyFileUtils.moveFileDir(MYVIDEO_ASSETS_PATH, TEMP_SAVE + MYVIDEO_ASSETS_NAME);
+            boolean b1 = MyFileUtils.moveFileDir(mSDKInfo.MYVIDEO_ASSETS_PATH, mSDKInfo.TEMP_SAVE + mSDKInfo.MYVIDEO_ASSETS_NAME);
             if (!b1) {
                 MyLog.error(TAG, "changeCodeToBuild -> 移动 MYVIDEO_ASSETS_NAME 文件夹失败！");
                 return false;
             }
 
-            boolean b3 = MyFileUtils.moveFile(FACE_MODULE_JAVA_FILE_PATH, TEMP_SAVE + FACE_MODULE_JAVA_FILE_NAME);
+            boolean b3 = MyFileUtils.moveFile(FACE_MODULE_JAVA_FILE_PATH, mSDKInfo.TEMP_SAVE + FACE_MODULE_JAVA_FILE_NAME);
             if (!b3) {
                 MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_JAVA_FILE_NAME 文件失败！");
                 return false;
             }
 
-            boolean b4 = MyFileUtils.copyFile(MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH, TEMP_SAVE + MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME);
+            boolean b4 = MyFileUtils.copyFile(mSDKInfo.MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH, mSDKInfo.TEMP_SAVE + mSDKInfo.MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME);
             if (!b4) {
                 MyLog.error(TAG, "changeCodeToBuild -> 移动 MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME 文件失败！");
                 return false;
             }
 
-            boolean b2 = MyFileUtils.modifyFileContent(MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH, line -> {
+            boolean b2 = MyFileUtils.modifyFileContent(mSDKInfo.MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH, line -> {
                 if (line.contains(FACE_FLAG_VAR_OBJ) || line.contains(FACE_FLAG_PACKAGE)) {
                     return "";
                 }
@@ -72,7 +77,7 @@ public class FaceModule extends BaseModule {
                 return false;
             }
 
-            boolean b5 = MyFileUtils.modifyFileContent(tttRtcEngineImplFilePath, line -> {
+            boolean b5 = MyFileUtils.modifyFileContent(mSDKInfo.tttRtcEngineImplFilePath, line -> {
                 if (line.contains(FACE_FLAG_PACKAGE) || line.contains(FACE_FLAG_THREE) || line.contains(FACE_FLAG_FUNC_TWO)) {
                     return "";
                 }
@@ -88,7 +93,7 @@ public class FaceModule extends BaseModule {
                 return false;
             }
         } else {
-            boolean b6 = MyFileUtils.modifyFileContent(globalConfigFilePath, line -> {
+            boolean b6 = MyFileUtils.modifyFileContent(mSDKInfo.globalConfigFilePath, line -> {
                 if (line.contains(FACE_FILE_FLAG_ENABLE)) {
                     return "public static boolean mVersaModuleEnabled = true;";
                 }
@@ -113,13 +118,13 @@ public class FaceModule extends BaseModule {
             return false;
         }
 
-        boolean b = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + FACE_MODULE_JAR, TEMP_SAVE + FACE_MODULE_JAR);
+        boolean b = MyFileUtils.moveFile(mSDKInfo.MYVIDEO_LIB_PATH + FACE_MODULE_JAR, mSDKInfo.TEMP_SAVE + FACE_MODULE_JAR);
         if (!b) {
             MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_JAR 文件失败！");
             return false;
         }
 
-        boolean b2 = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + FACE_MODULE_JAR2, TEMP_SAVE + FACE_MODULE_JAR2);
+        boolean b2 = MyFileUtils.moveFile(mSDKInfo.MYVIDEO_LIB_PATH + FACE_MODULE_JAR2, mSDKInfo.TEMP_SAVE + FACE_MODULE_JAR2);
         if (!b2) {
             MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE_MODULE_JAR2 文件失败！");
             return false;
@@ -129,26 +134,26 @@ public class FaceModule extends BaseModule {
 
     private boolean moveSO(boolean v7Module) {
         if (v7Module) {
-            boolean b = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + LIB_ARMEABI_V7 + FACE_MODULE_SO1, TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARMEABI_V7 + FACE_MODULE_SO1);
+            boolean b = MyFileUtils.moveFile(mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO1, mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO1);
             if (!b) {
                 MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE MODULE V7 SO1 文件失败！");
                 return false;
             }
 
-            boolean b1 = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + LIB_ARMEABI_V7 + FACE_MODULE_SO2, TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARMEABI_V7 + FACE_MODULE_SO2);
+            boolean b1 = MyFileUtils.moveFile(mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO2, mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO2);
             if (!b1) {
                 MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE MODULE V7 SO2 文件失败！");
                 return false;
             }
         }
 
-        boolean b2 = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + LIB_ARM64_V8 + FACE_MODULE_SO1, TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARM64_V8 + FACE_MODULE_SO1);
+        boolean b2 = MyFileUtils.moveFile(mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO1, mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO1);
         if (!b2) {
             MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE MODULE V8 SO1 文件失败！");
             return false;
         }
 
-        boolean b3 = MyFileUtils.moveFile(MYVIDEO_LIB_PATH + LIB_ARM64_V8 + FACE_MODULE_SO2, TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARM64_V8 + FACE_MODULE_SO2);
+        boolean b3 = MyFileUtils.moveFile(mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO2, mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO2);
         if (!b3) {
             MyLog.error(TAG, "changeCodeToBuild -> 移动 FACE MODULE V8 SO2 文件失败！");
             return false;
@@ -159,19 +164,19 @@ public class FaceModule extends BaseModule {
     @Override
     public boolean restoreCode(VersionSelect.VersionBean bean) {
         if (!bean.faceModule) {
-            MyFileUtils.moveFile(TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARMEABI_V7 + FACE_MODULE_SO1, MYVIDEO_LIB_PATH + LIB_ARMEABI_V7 + FACE_MODULE_SO1);
-            MyFileUtils.moveFile(TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARMEABI_V7 + FACE_MODULE_SO2, MYVIDEO_LIB_PATH + LIB_ARMEABI_V7 + FACE_MODULE_SO2);
-            MyFileUtils.moveFile(TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARM64_V8 + FACE_MODULE_SO1, MYVIDEO_LIB_PATH + LIB_ARM64_V8 + FACE_MODULE_SO1);
-            MyFileUtils.moveFile(TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARM64_V8 + FACE_MODULE_SO2, MYVIDEO_LIB_PATH + LIB_ARM64_V8 + FACE_MODULE_SO2);
-            MyFileUtils.moveFile(TEMP_SAVE + FACE_MODULE_JAR, MYVIDEO_LIB_PATH + FACE_MODULE_JAR);
-            MyFileUtils.moveFile(TEMP_SAVE + FACE_MODULE_JAR2, MYVIDEO_LIB_PATH + FACE_MODULE_JAR2);
-            MyFileUtils.moveFileDir(TEMP_SAVE + MYVIDEO_ASSETS_NAME, MYVIDEO_ASSETS_PATH);
-            MyFileUtils.moveFile(TEMP_SAVE + FACE_MODULE_JAVA_FILE_NAME, FACE_MODULE_JAVA_FILE_PATH);
-            MyFileUtils.moveFile(TEMP_SAVE + MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME, MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO1, mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO1);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO2, mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARMEABI_V7 + FACE_MODULE_SO2);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO1, mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO1);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO2, mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO2);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + FACE_MODULE_JAR, mSDKInfo.MYVIDEO_LIB_PATH + FACE_MODULE_JAR);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + FACE_MODULE_JAR2, mSDKInfo.MYVIDEO_LIB_PATH + FACE_MODULE_JAR2);
+            MyFileUtils.moveFileDir(mSDKInfo.TEMP_SAVE + mSDKInfo.MYVIDEO_ASSETS_NAME, mSDKInfo.MYVIDEO_ASSETS_PATH);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + FACE_MODULE_JAVA_FILE_NAME, FACE_MODULE_JAVA_FILE_PATH);
+            MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + mSDKInfo.MYVIDEO_CAMERA_INPUT_JAVA_FILE_NAME, mSDKInfo.MYVIDEO_CAMERA_INPUT_JAVA_FILE_PATH);
         } else {
             if (!bean.v8Module) {
-                MyFileUtils.moveFile(TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARM64_V8 + FACE_MODULE_SO1, MYVIDEO_LIB_PATH + LIB_ARM64_V8 + FACE_MODULE_SO1);
-                MyFileUtils.moveFile(TEMP_SAVE + File.separator + MYVIDEO_MODULE_NAME + LIB_ARM64_V8 + FACE_MODULE_SO2, MYVIDEO_LIB_PATH + LIB_ARM64_V8 + FACE_MODULE_SO2);
+                MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO1, mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO1);
+                MyFileUtils.moveFile(mSDKInfo.TEMP_SAVE + File.separator + mSDKInfo.MYVIDEO_MODULE_NAME + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO2, mSDKInfo.MYVIDEO_LIB_PATH + mSDKInfo.LIB_ARM64_V8 + FACE_MODULE_SO2);
             }
         }
         return true;

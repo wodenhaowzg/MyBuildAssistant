@@ -52,8 +52,7 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
 //            MyLog.error(TAG, "startBuild -> changeBranchTag failed!");
 //        }
 
-        buildPublishSdk(new int[]{VersionSelect.STAND_HWL});
-//        buildPublishSdk(new int[]{VersionSelect.CUSTOM_TY});
+        buildPublishSdk(new int[]{VersionSelect.CUSTOM_TY});
 //         出异常情况恢复代码
 //        restoreForFailed();
         return 0;
@@ -124,85 +123,6 @@ public class BuildStandSdkTask extends BuildBaseTaskImpl {
             String finallyFilePath = desAarFile.getAbsolutePath();
             executeBuild(finallyFilePath, buildStandSdkVersionSelect, versionBean);
             restoreStatus(versionBean);
-            unZipSDKFile(finallyFilePath);
-        }
-    }
-
-    private void unZipSDKFile(String finallyFilePath) {
-        new Thread(() -> {
-            MyLog.d(TAG, "finallyFilePath : " + finallyFilePath);
-            File file = new File(finallyFilePath);
-            int count = 5;
-            while (!file.exists()) {
-                if (count == 0) {
-                    break;
-                }
-
-                MyLog.d(TAG, "目标文件不存在，等待创建中... : " + finallyFilePath);
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                count--;
-            }
-
-            if (!file.exists()) {
-                return;
-            }
-
-            String parent = file.getParent();
-            String desPath = parent + File.separator + "temp";
-            File desDir = new File(desPath);
-            MyLog.d(TAG, "desDir : " + desDir.getAbsolutePath());
-            if (desDir.exists()) {
-                boolean delete = MyFileUtils.deleteFileDir(desDir);
-                if (!delete) {
-                    return;
-                }
-            }
-
-            String desFile = desPath + File.separator + file.getName();
-            MyLog.d(TAG, "finallyFilePath : " + finallyFilePath);
-            MyLog.d(TAG, "desPath : " + desPath);
-            boolean b = MyFileUtils.copyFile(finallyFilePath, desFile);
-            if (!b) {
-                return;
-            }
-
-            File srcFile = new File(desFile);
-            File zipFile = new File(desPath, "temp.zip");
-            boolean renameTo = srcFile.renameTo(zipFile);
-            if (!renameTo) {
-                return;
-            }
-
-            try {
-                MyZipUtils.unZipFiles(zipFile.getAbsolutePath(), desPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            zipFile.delete();
-            // 移动目标文件
-            moveTargetSDKFile();
-        }).start();
-    }
-
-    // /Users/zanewang/Downloads/WorkSpace/Company/Santiyun/Code/TTTRtcEngine_AndroidKit/temp/classes.jar
-    // /Users/zanewang/Downloads/WorkSpace/Company/Santiyun/Code/TTTRtcEngine_AndroidKit/temp/jni/armeabi-v7a
-    // /Users/zanewang/Downloads/WorkSpace/Company/Santiyun/Code/TTTRtcEngine_AndroidKit/temp/jni/arm64-v8a
-    // /Users/zanewang/Downloads/WorkSpace/Company/TAL/Code/Demo/xrtc_publish_android_release/libs
-    private void moveTargetSDKFile() {
-        String srcDirPath = SANTIYUN_CODE_PATH + File.separator + "TTTRtcEngine_AndroidKit" + File.separator + "temp";
-        String desDirPath = Constants.MACHINE_PATH + "/Downloads/WorkSpace/Company/TAL/Code/xrtc_publish_android_release/sdk_folder/core";  // FIXME HARD CODE
-        String srcJarFileName = "/classes.jar";
-        String[] srcSoFiles = new String[]{"libAudioDecoder.so", "libavrecoder.so", "libclientcore.so", "libcodec_ttt.so", "libDenoise.so", "libmyaudio_so.so", "libyuv_ttt.so"};
-        String srcV7SoDir = "/armeabi-v7a";
-        String srcV8SoDir = "/arm64-v8a";
-        MyFileUtils.moveFile(srcDirPath + srcJarFileName, desDirPath + srcJarFileName);
-        for (String srcSoFile : srcSoFiles) {
-            MyFileUtils.moveFile(srcDirPath + File.separator + "jni" + srcV7SoDir + File.separator + srcSoFile, desDirPath + srcV7SoDir + File.separator + srcSoFile);
-            MyFileUtils.moveFile(srcDirPath + File.separator + "jni" + srcV8SoDir + File.separator + srcSoFile, desDirPath + srcV8SoDir + File.separator + srcSoFile);
         }
     }
 

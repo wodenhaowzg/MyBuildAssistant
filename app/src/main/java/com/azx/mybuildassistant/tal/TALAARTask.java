@@ -1,6 +1,7 @@
 package com.azx.mybuildassistant.tal;
 
 import com.azx.mybuildassistant.Constants;
+import com.azx.mybuildassistant.Task;
 import com.azx.mybuildassistant.utils.MyFileUtils;
 import com.azx.mybuildassistant.utils.MyLog;
 import com.azx.mybuildassistant.utils.MyZipUtils;
@@ -8,7 +9,7 @@ import com.azx.mybuildassistant.utils.MyZipUtils;
 import java.io.File;
 import java.io.IOException;
 
-class AARTask extends BaseTaskImpl {
+class TALAARTask implements Task {
 
     private static final String TAG = "AARTask";
     private static final String[] SO_FILES = new String[]{"libAudioDecoder.so", "libavrecoder.so", "libclientcore.so", "libcodec_ttt.so", "libDenoise.so", "libmyaudio_so.so", "libyuv_ttt.so"};
@@ -20,7 +21,7 @@ class AARTask extends BaseTaskImpl {
     private final String mSrcDirPath;
     private final String mDesDirPath;  // FIXME HARD CODE
 
-    public AARTask(String path) {
+    public TALAARTask(String path) {
         mAARFilePath = path;
         mSrcDirPath = Constants.TAL_WORKSPACE + File.separator + "TTTRtcEngine_AndroidKit" + File.separator + "temp";
         mDesDirPath = Constants.TAL_WORKSPACE + "/xrtc_publish_android_release/sdk_folder/core";
