@@ -31,12 +31,12 @@ public class Constants {
             "Downloads" + File.separator +
             "WorkSpace" + File.separator +
             "Android" + File.separator +
-            "MyGithubs";
+            "MyGithub";
 
     public static final String GITHUB_ANDROID_PATH = MACHINE_PATH + File.separator +
             "Downloads" + File.separator +
             "WorkSpace" + File.separator +
-            "MyGithubs" + File.separator +
+            "MyGithub" + File.separator +
             "Android";
 
     public static final String PROJECT_NAME = File.separator + "MyBuildAssistant";

@@ -38,7 +38,7 @@ public class TYBuildTask implements Task {
 
     @Override
     public int start() {
-        mSDKInfo = new SDKInfo("/Users/zanewang/Downloads/WorkSpace/MyGithubs/Android/AV/TTT_AVSDK");
+        mSDKInfo = new SDKInfo(Constants.GITHUB_PATH + "/Android/AV/TTT_AVSDK");
         AAR_OUTPUT_PATH = mSDKInfo.WSTECHAPI_MODULE_PATH + "/build/outputs/aar" + mSDKInfo.AAR_SRC;
 
         boolean buildResult = startBuild(VersionSelect.CUSTOM_TY);
